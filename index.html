@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Foci VB 2026 Élő Közvetítő Rendszer</title>
+  <title>Foci VB 2026 Élő Közvetítő Rendszer és Ágrajz</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
@@ -24,7 +24,6 @@
     }
   </script>
   <style>
-    /* Custom scrollbar style for logs */
     .scrollbar-thin::-webkit-scrollbar {
       width: 4px;
     }
@@ -47,7 +46,7 @@
     </div>
   </div>
 
-  <!-- Firebase SDK modulok beöltése CDN-ről -->
+  <!-- Firebase SDK modulok beültetése CDN-ről -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -55,7 +54,8 @@
 
     // --- GLOBÁLIS ALKALMAZÁS ÁLLAPOT (STATE) ---
     const state = {
-      activeTab: 'viewer', // 'viewer' | 'admin'
+      activeTab: 'bracket', // 'bracket' | 'viewer' | 'admin'
+      bracketTab: 'left', // 'left' | 'right' | 'finals'
       isAdminAuthenticated: false,
       isApiActive: false,
       useMockApi: true,
@@ -68,13 +68,51 @@
       isPublishing: false,
       statusMessage: null,
       adminPasswordInput: '',
-      markdownInput: ''
+      markdownInput: '',
+      
+      // Kézi mentéshez és konfigurációhoz
+      firebaseConfigRaw: '',
+      customAppId: 'foci-vb-2026'
     };
 
-    let auth, db, appId;
-    let apiTimer = null;
+    let auth = null, db = null, appId = 'foci-vb-2026';
 
-    // --- BIZTONSÁGOS NAPLÓZÓ FÜGGVÉNY ---
+    // Alapértelmezett ágrajz struktúra
+    const defaultBracketMatches = {
+      M73: { id: "M73", date: "jún 28.", venue: "Los Angeles", teamA: "A csoport 2. hely", teamB: "B csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamA" },
+      M74: { id: "M74", date: "jún 28.", venue: "San Francisco", teamA: "Mexikó", teamB: "C/D/E/F 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamB" },
+      M75: { id: "M75", date: "jún 29.", venue: "Monterrey", teamA: "C csoport 1. hely", teamB: "F csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamA" },
+      M76: { id: "M76", date: "jún 29.", venue: "Houston", teamA: "E csoport 2. hely", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamB" },
+      M77: { id: "M77", date: "jún 30.", venue: "Boston", teamA: "Franciaország", teamB: "C/D/G/H 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamA" },
+      M78: { id: "M78", date: "jún 30.", venue: "Philadelphia", teamA: "Argentína", teamB: "L csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamB" },
+      M79: { id: "M79", date: "júl 1.", venue: "Kansas City", teamA: "Kolumbia", teamB: "A/B/C/D/L 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamA" },
+      M80: { id: "M80", date: "júl 1.", venue: "Vancouver", teamA: "B csoport 1. hely", teamB: "E/F/G/I/J 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamB" },
+      M81: { id: "M81", date: "júl 2.", venue: "Seattle", teamA: "USA", teamB: "B/F/G/H/I 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamA" },
+      M82: { id: "M82", date: "júl 2.", venue: "New York/NJ", teamA: "G csoport 1. hely", teamB: "H csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamB" },
+      M83: { id: "M83", date: "júl 2.", venue: "Dallas", teamA: "Ausztria", teamB: "K csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamA" },
+      M84: { id: "M84", date: "júl 2.", venue: "Atlanta", teamA: "D csoport 2. hely", teamB: "Németország", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamB" },
+      M85: { id: "M85", date: "júl 3.", venue: "Miami", teamA: "H csoport 1. hely", teamB: "J/K/L/A/B 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamA" },
+      M86: { id: "M86", date: "jún 3.", venue: "San Francisco", teamA: "F csoport 1. hely", teamB: "G csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamB" },
+      M87: { id: "M87", date: "júl 3.", venue: "Los Angeles", teamA: "L csoport 1. hely", teamB: "E/F/H/I/J 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamA" },
+      M88: { id: "M88", date: "júl 3.", venue: "Boston", teamA: "C csoport 2. hely", teamB: "D/K/L 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamB" },
+      M89: { id: "M89", teamA: "Nyertes M73", teamB: "Nyertes M74", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamA" },
+      M90: { id: "M90", teamA: "Nyertes M75", teamB: "Nyertes M76", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamB" },
+      M91: { id: "M91", teamA: "Nyertes M77", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamA" },
+      M92: { id: "M92", teamA: "Nyertes M79", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamB" },
+      M93: { id: "M93", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamA" },
+      M94: { id: "M94", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamB" },
+      M95: { id: "M95", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamA" },
+      M96: { id: "M96", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamB" },
+      M97: { id: "M97", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamA" },
+      M98: { id: "M98", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamB" },
+      M99: { id: "M99", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamA" },
+      M100: { id: "M100", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamB" },
+      M101: { id: "M101", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", nextMatch: "M104", slot: "teamA" },
+      M102: { id: "M102", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "M104", slot: "teamB" },
+      M104: { id: "M104", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "" },
+      M103: { id: "M103", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "" }
+    };
+
     const addLog = (message, type = 'info') => {
       const time = new Date().toLocaleTimeString('hu-HU');
       state.apiLogs = [{ time, message, type }, ...state.apiLogs].slice(0, 15);
@@ -84,201 +122,136 @@
     // --- MARKDOWN TO JSON PARSER ---
     const parseMarkdownToJSON = (md) => {
       if (!md) return null;
-      
       const data = {
         lastUpdated: new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) + ' (CEST)',
         ceremonies: [],
         matches: []
       };
 
-      // Megnyitók feldolgozása
-      const ceremonyMatches = md.matchAll(/## 🎭 Kiemelt Esemény: ([^\n]+)([\s\S]*?)(?=(## 🎭|## 📅|###|$))/g);
-      for (const m of ceremonyMatches) {
-        const title = m[1].trim();
-        const content = m[2];
-        const status = content.match(/Státusz:\s*(.+)/)?.[1]?.replace(/\*/g, '').trim() || '';
-        const place = content.match(/Helyszín:\s*(.+)/)?.[1]?.trim() || '';
-        const time = content.match(/Időpont:\s*(.+)/)?.[1]?.trim() || '';
-        
-        const videoLinks = [];
-        const linkMatches = content.matchAll(/(🇭🇺|🌐)\s*\*?\*?([^*\[\n]+)\*?\*?:\s*▶️\s*\[([^\]]+)\]\(([^)]+)\)/g);
-        for (const lm of linkMatches) {
-          videoLinks.push({
-            lang: lm[1],
-            label: lm[2].trim(),
-            text: lm[3].trim(),
-            url: lm[4].trim()
-          });
-        }
-        data.ceremonies.push({ title, status, place, time, videoLinks });
-      }
-
-      // Meccsek feldolgozása
-      const matchMatches = md.matchAll(/### (\d+)\.\s*([^-]+)–\s*([^\n(]+)(?:\(([^)]+)\))?([\s\S]*?)(?=(### \d+|\*Utolsó|$))/g);
-      for (const m of matchMatches) {
-        const id = m[1];
-        const teamA = m[2].trim();
-        const teamB = m[3].trim();
-        const group = m[4] ? m[4].trim() : '';
-        const content = m[5];
-
-        const status = content.match(/Státusz:\s*(.+)/)?.[1]?.replace(/\*/g, '').trim() || '';
-        const score = content.match(/Eredmény:\s*([^\n]+)/)?.[1]?.replace(/\*/g, '').trim() || '–';
-        const time = content.match(/Időpont:\s*(.+)/)?.[1]?.trim() || '';
-        const place = content.match(/Helyszín:\s*(.+)/)?.[1]?.trim() || '';
-
-        const events = [];
-        const eventLines = content.matchAll(/\*\s*\*\*([^*]+)\*\*:\s*(.+)/g);
-        for (const el of eventLines) {
-          const rawTime = el[1].trim();
-          let rawText = el[2].trim();
-          
-          let icon = '📢';
-          if (rawText.includes('⚽') || rawText.includes('GÓÓÓL')) icon = '⚽';
-          else if (rawText.includes('🟨') || rawText.includes('Sárga lap')) icon = '🟨';
-          else if (rawText.includes('🟥') || rawText.includes('KIÁLLÍTÁS') || rawText.includes('piros')) icon = '🟥';
-          else if (rawText.includes('🔄') || rawText.includes('Csere') || rawText.includes('csere')) icon = '🔄';
-          else if (rawText.includes('💧') || rawText.includes('Hidratációs')) icon = '💧';
-          else if (rawText.includes('⏸️') || rawText.includes('Félidő')) icon = '⏸️';
-          else if (rawText.includes('🏁') || rawText.includes('Vége')) icon = '🏁';
-          else if (rawText.includes('🧤') || rawText.includes('bravúr') || rawText.includes('véd')) icon = '🧤';
-          else if (rawText.includes('💥') || rawText.includes('helyzet') || rawText.includes('KAPUFA')) icon = '💥';
-
-          rawText = rawText.replace(/^[⚽🟨🟥🔄💧⏸️🏁🧤💥📢\s]+/g, '');
-          events.push({ time: rawTime, icon, text: rawText });
-        }
-
-        const videoLinks = [];
-        const linkMatches = content.matchAll(/(🇭🇺|🌐)\s*\*?\*?([^*\[\n]+)\*?\?:\s*▶️\s*\[([^\]]+)\]\(([^)]+)\)/g);
-        for (const lm of linkMatches) {
-          videoLinks.push({
-            lang: lm[1],
-            label: lm[2].trim(),
-            text: lm[3].trim(),
-            url: lm[4].trim()
-          });
-        }
-
-        data.matches.push({
-          id, teamA, teamB, group, status, score, time, place, events, videoLinks
+      const ceremonies = md.matchAll(/## 🎭 Kiemelt Esemény: ([^\n]+)([\s\S]*?)(?=(## 🎭|## 📅|###|$))/g);
+      for (const m of ceremonies) {
+        data.ceremonies.push({
+          title: m[1].trim(),
+          status: m[2].match(/Státusz:\s*(.+)/)?.[1]?.replace(/\*/g, '').trim() || '',
+          place: m[2].match(/Helyszín:\s*(.+)/)?.[1]?.trim() || '',
+          time: m[2].match(/Időpont:\s*(.+)/)?.[1]?.trim() || '',
+          videoLinks: []
         });
       }
 
+      const matches = md.matchAll(/### (\d+)\.\s*([^-]+)–\s*([^\n(]+)(?:\(([^)]+)\))?([\s\S]*?)(?=(### \d+|\*Utolsó|$))/g);
+      for (const m of matches) {
+        const content = m[5];
+        const events = [];
+        const eventLines = content.matchAll(/\*\s*\*\*([^*]+)\*\*:\s*(.+)/g);
+        for (const el of eventLines) {
+          let text = el[2].trim();
+          let icon = '📢';
+          if (text.includes('⚽')) icon = '⚽';
+          else if (text.includes('🟨')) icon = '🟨';
+          else if (text.includes('🟥')) icon = '🟥';
+          else if (text.includes('🔄')) icon = '🔄';
+          events.push({ time: el[1].trim(), icon, text: text.replace(/^[⚽🟨🟥🔄💧⏸️🏁🧤💥📢\s]+/g, '') });
+        }
+
+        data.matches.push({
+          id: m[1],
+          teamA: m[2].trim(),
+          teamB: m[3].trim(),
+          group: m[4] ? m[4].trim() : '',
+          status: content.match(/Státusz:\s*(.+)/)?.[1]?.replace(/\*/g, '').trim() || '',
+          score: content.match(/Eredmény:\s*([^\n]+)/)?.[1]?.replace(/\*/g, '').trim() || '–',
+          place: content.match(/Helyszín:\s*(.+)/)?.[1]?.trim() || '',
+          events
+        });
+      }
       return data;
     };
 
-    // --- MOCK API GENERÁTOR ---
-    const getMockFootballApiResponse = (fixtureId) => {
-      return {
-        response: [{
-          fixture: {
-            id: parseInt(fixtureId) || 123456,
-            venue: { name: "Toronto Stadium (BMO Field)" },
-            status: { elapsed: 75, short: "2H" },
-            date: "2026-06-12T21:00:00+02:00"
-          },
-          league: { round: "B csoport, 1. forduló" },
-          teams: {
-            home: { name: "Kanada" },
-            away: { name: "Bosznia-Hercegovina" }
-          },
-          goals: { home: 1, away: 1 },
-          events: [
-            { time: { elapsed: 10 }, type: "Card", detail: "Yellow Card", team: { name: "Kanada" }, player: { name: "Alistair Johnston" } },
-            { time: { elapsed: 20 }, type: "Goal", detail: "Normal Goal", team: { name: "Bosznia-Hercegovina" }, player: { name: "Jovo Lukić" }, assist: { name: "Ermedin Demirović" } },
-            { time: { elapsed: 30 }, type: "Subst", detail: "Water Break", team: { name: "System" }, player: { name: "Hidratációs szünet" } },
-            { time: { elapsed: 44 }, type: "Card", detail: "Yellow Card", team: { name: "Bosznia-Hercegovina" }, player: { name: "Ermedin Demirović" } },
-            { time: { elapsed: 45 }, type: "Card", detail: "Yellow Card", team: { name: "Bosznia-Hercegovina" }, player: { name: "Jovo Lukić" } },
-            { time: { elapsed: 55 }, type: "Goal", detail: "Missed", team: { name: "Kanada" }, player: { name: "Jonathan David (Vasilj védett)" } },
-            { time: { elapsed: 58 }, type: "subst", detail: "Substitution", team: { name: "Kanada" }, player: { name: "Russell-Rowe" }, assist: { name: "Cyle Larin" } },
-            { time: { elapsed: 60 }, type: "Card", detail: "Yellow Card", team: { name: "Bosznia-Hercegovina" }, player: { name: "Dennis Hadžikadunić" } },
-            { time: { elapsed: 71 }, type: "Goal", detail: "Normal Goal", team: { name: "Kanada" }, player: { name: "Cyle Larin" }, assist: { name: "Alphonso Davies" } }
-          ]
-        }]
-      };
+    // --- BRACKET CARD RENDER ---
+    const renderBracketCard = (matchId) => {
+      const b = state.liveState?.bracket || defaultBracketMatches;
+      const m = b[matchId];
+      if (!m) return '';
+
+      const isASelected = m.winner && m.winner === m.teamA;
+      const isBSelected = m.winner && m.winner === m.teamB;
+
+      return `
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md hover:border-emerald-500/30 transition-all">
+          <div class="flex items-center justify-between text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-800/50 pb-1">
+            <span>${m.id} • ${m.date || 'Dátum'}</span>
+            <span class="text-emerald-400 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
+          </div>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
+              <span class="text-xs font-bold truncate max-w-[130px] ${isASelected ? 'text-emerald-400' : 'text-slate-300'}">${m.teamA}</span>
+              <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
+            </div>
+            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isBSelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
+              <span class="text-xs font-bold truncate max-w-[130px] ${isBSelected ? 'text-emerald-400' : 'text-slate-300'}">${m.teamB}</span>
+              <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
+            </div>
+          </div>
+        </div>
+      `;
     };
 
-    // --- API VÁLASZ BEOLVASZTÁSA A FIRESTORE ÁLLAPOTBA ---
-    const parseAndMergeApiData = (apiResponse, fixtureId) => {
-      const fixtureData = apiResponse.response?.[0];
-      if (!fixtureData) {
-        throw new Error("Az API nem szolgáltatott érvényes adatokat a megadott Fixture ID-hoz.");
-      }
-
-      const homeTeam = fixtureData.teams?.home?.name || "Hazai";
-      const awayTeam = fixtureData.teams?.away?.name || "Vendég";
-      const homeGoals = fixtureData.goals?.home ?? 0;
-      const awayGoals = fixtureData.goals?.away ?? 0;
-      const elapsed = fixtureData.fixture?.status?.elapsed;
-      const shortStatus = fixtureData.fixture?.status?.short;
-
-      let matchStatus = "⚪ Még nem kezdődött el";
-      if (["1H", "2H", "HT", "ET", "BT", "P", "LIVE"].includes(shortStatus)) {
-        matchStatus = `🔴 ÉLŐ / FOLYAMATBAN (${elapsed ? elapsed + '. perc' : 'Élő'})`;
-      } else if (["FT", "AET", "PEN"].includes(shortStatus)) {
-        matchStatus = "✅ BEFEJEZŐDÖTT";
-      }
-
-      const events = (fixtureData.events || []).map(e => {
-        const timeLabel = `${e.time?.elapsed || 0}'`;
-        let icon = "📢";
-        let text = "";
-
-        if (e.type === "Goal") {
-          icon = "⚽";
-          text = `GÓÓÓL! ${e.player?.name || 'Játékos'} betalál a kapuba. ${e.assist?.name ? '(Gólpassz: ' + e.assist.name + ')' : ''}`;
-        } else if (e.type === "Card") {
-          icon = e.detail?.includes("Red") ? "🟥" : "🟨";
-          text = `${e.detail?.includes("Red") ? 'PIROS LAP / KIÁLLÍTÁS' : 'Sárga lap'}! Játékos: ${e.player?.name || 'Névtelen'} (${e.team?.name || ''})`;
-        } else if (e.type === "Subst" || e.type === "subst") {
-          icon = "🔄";
-          text = `Csere! Lemegy: ${e.player?.name || 'Játékos'}, beáll: ${e.assist?.name || 'Játékos'} (${e.team?.name || ''})`;
-        } else {
-          text = `${e.detail || e.type} - Játékos: ${e.player?.name || ''}`;
-        }
-
-        return { time: timeLabel, icon, text };
-      }).reverse();
-
-      const updatedState = state.liveState ? JSON.parse(JSON.stringify(state.liveState)) : {
-        rawMarkdown: "",
-        parsed: { ceremonies: [], matches: [] }
-      };
-
-      const targetMatchIndex = updatedState.parsed.matches.findIndex(m => m.id === "3");
-      const targetMatch = targetMatchIndex !== -1 ? updatedState.parsed.matches[targetMatchIndex] : {
-        id: "3",
-        teamA: homeTeam,
-        teamB: awayTeam,
-        group: fixtureData.league?.round || "B csoport",
-        videoLinks: []
-      };
-
-      targetMatch.score = `${homeGoals} – ${awayGoals}`;
-      targetMatch.status = matchStatus;
-      targetMatch.place = fixtureData.fixture?.venue?.name || targetMatch.place;
-      targetMatch.events = events;
-
-      if (targetMatchIndex === -1) {
-        updatedState.parsed.matches.push(targetMatch);
-      } else {
-        updatedState.parsed.matches[targetMatchIndex] = targetMatch;
-      }
-
-      updatedState.parsed.lastUpdated = new Date().toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' }) + ' (CEST)';
-      return updatedState;
-    };
-
-    // --- HTML RENDERELŐ MOTOR (VANILLA REACTIVITY) ---
+    // --- HTML RENDER ENGINE ---
     const render = () => {
       const container = document.getElementById('app');
       if (!container) return;
 
+      // HA NINCS FIREBASE BEÁLLÍTÁS, JELENÍTSÜK MEG A VARÁZSLÓT!
+      if (!db) {
+        container.innerHTML = `
+          <div class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
+              <div class="flex items-center space-x-3 text-emerald-400">
+                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                <h2 class="text-xl font-black tracking-tight">Firebase Kapcsolat Szükséges</h2>
+              </div>
+              
+              <p class="text-sm text-slate-400 leading-relaxed">
+                Ez a weboldal a saját Vercel-szervereden fut, ezért a valós idejű szinkronizáláshoz meg kell adnod a saját **Firebase** kulcsaidat. Ezek az adatok biztonságosan, kizárólag a te böngésződben lesznek tárolva.
+              </p>
+
+              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-500">
+                <p class="font-bold text-slate-400">Lépések a beállításhoz:</p>
+                <ol class="list-decimal list-inside space-y-1">
+                  <li>Lépj be a <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-400 underline">Firebase Console</a> oldalra és hozz létre egy projektet.</li>
+                  <li>Kapcsold be az <strong>Anonymous Authentication</strong>-t az Auth fülön.</li>
+                  <li>Hozz létre egy <strong>Cloud Firestore</strong> adatbázist.</li>
+                  <li>Projekt Beállítások -> Válaszd ki a Webalkalmazást (&lt;/&gt;) és másold ki a beállításokat tartalmazó JSON-t.</li>
+                </ol>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Firebase Config JSON</label>
+                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID (Választható)</label>
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white" />
+                </div>
+                <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
+                  <i data-lucide="check"></i>
+                  <span>Mentés és Csatlakozás</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        lucide.createIcons();
+        document.getElementById('btn-save-config')?.addEventListener('click', saveFirebaseSetup);
+        return;
+      }
+
       const activeLiveMatch = state.liveState?.parsed?.matches?.find(m => m.status.includes('ÉLŐ') || m.status.includes('FOLYAMATBAN'));
 
-      // 1. FEJLÉC ÉS FEJLÉC-BAR sablonja
       let html = `
-        <!-- HEADING -->
+        <!-- HEADER -->
         <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -286,33 +259,20 @@
                 <i data-lucide="flame" class="w-6 h-6 animate-pulse"></i>
               </div>
               <div>
-                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r bg-clip-text text-transparent from-emerald-400 to-teal-200">
-                  FOCI VB 2026
-                </h1>
+                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r bg-clip-text text-transparent from-emerald-400 to-teal-200">FIFA VB 2026</h1>
                 <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Élő Közvetítő Központ</p>
               </div>
             </div>
 
-            <div class="flex items-center space-x-2">
-              <button id="btn-tab-viewer" class="px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${
-                state.activeTab === 'viewer'
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }">
-                <span class="flex items-center space-x-1.5">
-                  <i data-lucide="tv" class="w-4 h-4"></i>
-                  <span>Nézői Felület</span>
-                </span>
+            <div class="flex items-center space-x-1 sm:space-x-2">
+              <button id="btn-tab-bracket" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+                <span class="flex items-center space-x-1.5"><i data-lucide="git-merge" class="w-4 h-4"></i><span>Ágrajz</span></span>
               </button>
-              <button id="btn-tab-admin" class="px-4 py-2 rounded-xl text-sm font-bold tracking-wide transition-all ${
-                state.activeTab === 'admin'
-                  ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              }">
-                <span class="flex items-center space-x-1.5">
-                  <i data-lucide="settings" class="w-4 h-4"></i>
-                  <span>Admin Mód</span>
-                </span>
+              <button id="btn-tab-viewer" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+                <span class="flex items-center space-x-1.5"><i data-lucide="tv" class="w-4 h-4"></i><span>Közvetítés</span></span>
+              </button>
+              <button id="btn-tab-admin" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'admin' ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+                <span class="flex items-center space-x-1.5"><i data-lucide="settings" class="w-4 h-4"></i><span>Közvetítő Pult</span></span>
               </button>
             </div>
           </div>
@@ -329,75 +289,154 @@
                 </span>
                 <span class="font-semibold text-emerald-400">Élő adatbázis kapcsolat</span>
               </div>
-              ${state.isApiActive ? `
-                <div class="bg-blue-500/10 text-blue-400 px-2.5 py-0.5 rounded-full border border-blue-500/20 flex items-center space-x-1 font-bold text-[10px] animate-pulse">
-                  <i data-lucide="radio" class="w-3 h-3 text-blue-400"></i>
-                  <span>SPORT API AKTÍV</span>
-                </div>
-              ` : ''}
             </div>
-            ${state.liveState?.parsed?.lastUpdated ? `
-              <div>Utolsó frissítés: <span class="text-slate-200 font-bold">${state.liveState.parsed.lastUpdated}</span></div>
-            ` : ''}
+            <div class="flex items-center space-x-3">
+              <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
+                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                <span>Projekt leválasztása</span>
+              </button>
+            </div>
           </div>
         </div>
 
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
       `;
 
-      // 2. NÉZŐI NÉZET
+      // --- TAB 1: INTERAKTÍV ÁGRAJZ ---
+      if (state.activeTab === 'bracket') {
+        html += `
+          <div class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
+              <div>
+                <h2 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                  <i data-lucide="award" class="text-emerald-400"></i>
+                  <span>Kieséses Szakasz (32 Csapat)</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Kövesd végig az egyenes kieséses meccsek alakulását és eredményeit.</p>
+              </div>
+
+              <!-- Ágrajz al-tabok -->
+              <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 self-start">
+                <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Bal Ág</button>
+                <button id="btn-bracket-right" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'right' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Jobb Ág</button>
+                <button id="btn-bracket-finals" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'finals' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Döntők</button>
+              </div>
+            </div>
+
+            <!-- BAL ÁG -->
+            ${state.bracketTab === 'left' ? `
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-950 p-4 rounded-3xl border border-slate-900">
+                <div class="space-y-4">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Legjobb 32 (Bal Ág)</h3>
+                  ${renderBracketCard("M73")}${renderBracketCard("M74")}${renderBracketCard("M75")}${renderBracketCard("M76")}
+                  ${renderBracketCard("M77")}${renderBracketCard("M78")}${renderBracketCard("M79")}${renderBracketCard("M80")}
+                </div>
+                <div class="space-y-8 md:pt-12">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Nyolcaddöntő</h3>
+                  <div class="space-y-16">
+                    ${renderBracketCard("M89")}${renderBracketCard("M90")}${renderBracketCard("M91")}${renderBracketCard("M92")}
+                  </div>
+                </div>
+                <div class="space-y-16 md:pt-24">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Negyeddöntő</h3>
+                  <div class="space-y-36">
+                    ${renderBracketCard("M97")}${renderBracketCard("M98")}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- JOBB ÁG -->
+            ${state.bracketTab === 'right' ? `
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-950 p-4 rounded-3xl border border-slate-900">
+                <div class="space-y-4">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Legjobb 32 (Jobb Ág)</h3>
+                  ${renderBracketCard("M81")}${renderBracketCard("M82")}${renderBracketCard("M83")}${renderBracketCard("M84")}
+                  ${renderBracketCard("M85")}${renderBracketCard("M86")}${renderBracketCard("M87")}${renderBracketCard("M88")}
+                </div>
+                <div class="space-y-8 md:pt-12">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Nyolcaddöntő</h3>
+                  <div class="space-y-16">
+                    ${renderBracketCard("M93")}${renderBracketCard("M94")}${renderBracketCard("M95")}${renderBracketCard("M96")}
+                  </div>
+                </div>
+                <div class="space-y-16 md:pt-24">
+                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Negyeddöntő</h3>
+                  <div class="space-y-36">
+                    ${renderBracketCard("M99")}${renderBracketCard("M100")}
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- FINALS -->
+            ${state.bracketTab === 'finals' ? `
+              <div class="max-w-4xl mx-auto space-y-12">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-900/40 p-8 rounded-3xl border border-slate-800">
+                  <div class="space-y-12">
+                    <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2">Elődöntők</h3>
+                    ${renderBracketCard("M101")}
+                    ${renderBracketCard("M102")}
+                  </div>
+                  <div class="hidden md:flex flex-col items-center justify-center text-slate-500">
+                    <i data-lucide="chevron-right" class="w-8 h-8 text-emerald-500 animate-pulse"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider mt-2">Döntőbe</span>
+                  </div>
+                  <div class="space-y-8">
+                    <div>
+                      <h3 class="text-xs text-amber-400 font-black uppercase tracking-widest text-center border-b border-amber-500/20 pb-2 mb-3">Döntő</h3>
+                      ${renderBracketCard("M104")}
+                    </div>
+                    <div>
+                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
+                      ${renderBracketCard("M103")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
+      // --- TAB 2: NÉZŐI KÖZVETÍTÉS FEED ---
       if (state.activeTab === 'viewer') {
         html += `
           <div class="space-y-8">
-            <!-- HERO LIVE PANEL -->
             ${activeLiveMatch ? `
               <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 rounded-3xl border border-emerald-500/20 shadow-2xl">
                 <div class="absolute top-4 left-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-black tracking-widest flex items-center space-x-1.5 animate-pulse">
                   <i data-lucide="activity" class="w-3 text-emerald-400"></i>
                   <span>ÉLŐ KÖZVETÍTÉS</span>
                 </div>
-                
                 <div class="p-8 flex flex-col items-center text-center">
                   <span class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4">
                     ${activeLiveMatch.group || 'Csoportmérkőzés'} • ${activeLiveMatch.place}
                   </span>
-                  
                   <div class="w-full max-w-2xl flex items-center justify-between my-8">
                     <div class="flex-1 flex flex-col items-center">
-                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">
-                        ${activeLiveMatch.teamA.includes('Kanada') ? '🇨🇦' : activeLiveMatch.teamA.includes('Mexikó') ? '🇲🇽' : '⚽'}
-                      </div>
+                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">⚽</div>
                       <h3 class="text-lg sm:text-xl font-black mt-3 text-slate-100">${activeLiveMatch.teamA}</h3>
                     </div>
-
                     <div class="px-6 py-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex flex-col items-center justify-center min-w-[120px] shadow-inner">
                       <span class="text-3xl sm:text-5xl font-black tracking-tight text-white">${activeLiveMatch.score}</span>
-                      <span class="text-[10px] text-emerald-400 font-bold tracking-widest mt-1 uppercase bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                        ${activeLiveMatch.status.match(/\d+\.?\s*perc/)?.[0] || 'Játékban'}
-                      </span>
+                      <span class="text-[10px] text-emerald-400 font-bold tracking-widest mt-1 uppercase bg-emerald-500/10 px-2 py-0.5 rounded-full">${activeLiveMatch.status}</span>
                     </div>
-
                     <div class="flex-1 flex flex-col items-center">
-                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">
-                        ${activeLiveMatch.teamB.includes('Bosznia') ? '🇧🇦' : activeLiveMatch.teamB.includes('Csehország') ? '🇨🇿' : '⚽'}
-                      </div>
+                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">⚽</div>
                       <h3 class="text-lg sm:text-xl font-black mt-3 text-slate-100">${activeLiveMatch.teamB}</h3>
                     </div>
                   </div>
-
-                  <!-- Timeline -->
                   ${activeLiveMatch.events && activeLiveMatch.events.length > 0 ? `
                     <div class="w-full max-w-xl text-left border-t border-slate-800 pt-6 mt-4">
                       <h4 class="text-xs text-slate-400 font-extrabold tracking-widest uppercase mb-4 flex items-center space-x-2">
                         <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
-                        <span>Közvetítési Idővonal</span>
+                        <span>Események Idővonala</span>
                       </h4>
                       <div class="relative border-l border-slate-800 ml-4 pl-6 space-y-5">
                         ${activeLiveMatch.events.map(ev => `
                           <div class="relative">
-                            <span class="absolute -left-[35px] top-0 bg-slate-900 border border-slate-800 text-sm w-7 h-7 rounded-full flex items-center justify-center shadow-md">
-                              ${ev.icon}
-                            </span>
+                            <span class="absolute -left-[35px] top-0 bg-slate-900 border border-slate-800 text-sm w-7 h-7 rounded-full flex items-center justify-center shadow-md">${ev.icon}</span>
                             <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-all">
                               <span class="inline-block text-xs font-bold text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded mb-1">${ev.time}</span>
                               <p class="text-sm font-medium text-slate-300">${ev.text}</p>
@@ -411,12 +450,10 @@
               </div>
             ` : `
               <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 text-center flex flex-col items-center justify-center space-y-4">
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400">
-                  <i data-lucide="tv" class="w-8 h-8"></i>
-                </div>
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400"><i data-lucide="tv" class="w-8 h-8"></i></div>
                 <div>
                   <h3 class="font-black text-xl text-slate-200">Nincs folyamatban élő mérkőzés</h3>
-                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">Az API vagy kézi indítás után azonnal élő közvetítésre vált a rendszer.</p>
+                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">Az adminisztrációs felületen indíthatsz és módosíthatsz élő meccseket.</p>
                 </div>
               </div>
             `}
@@ -428,218 +465,106 @@
                 <span>Mérkőzések és Eredmények</span>
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                ${state.liveState?.parsed?.matches?.map(match => {
-                  const isFinished = match.status.includes('BEFEJEZŐDÖTT');
-                  const isLive = match.status.includes('ÉLŐ') || match.status.includes('FOLYAMATBAN');
-                  return `
-                    <div class="p-6 rounded-2xl border transition-all flex flex-col justify-between ${
-                      isLive ? 'bg-gradient-to-br from-slate-900 to-emerald-950/10 border-emerald-500/20 shadow-lg' : 'bg-slate-900/50 border-slate-800'
-                    }">
-                      <div>
-                        <div class="flex items-center justify-between mb-4">
-                          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${match.group || 'Csoportkör'}</span>
-                          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase ${
-                            isLive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse' : isFinished ? 'bg-slate-850 text-slate-400' : 'bg-slate-950 text-slate-500'
-                          }">${isLive ? 'ÉLŐ' : isFinished ? 'VÉGEREDMÉNY' : 'MÉG NEM KEZDŐDÖTT EL'}</span>
-                        </div>
-                        <div class="flex items-center justify-between py-2">
-                          <div class="space-y-3 flex-1">
-                            <div class="flex items-center space-x-2.5">
-                              <span class="text-xl">${match.teamA.includes('Kanada') ? '🇨🇦' : match.teamA.includes('Mexikó') ? '🇲🇽' : match.teamA.includes('Korea') ? '🇰🇷' : '⚽'}</span>
-                              <span class="font-bold text-slate-100">${match.teamA}</span>
-                            </div>
-                            <div class="flex items-center space-x-2.5">
-                              <span class="text-xl">${match.teamB.includes('Bosznia') ? '🇧🇦' : match.teamB.includes('Csehország') ? '🇨🇿' : match.teamB.includes('Afrika') ? '🇿🇦' : '⚽'}</span>
-                              <span class="font-bold text-slate-100">${match.teamB}</span>
-                            </div>
-                          </div>
-                          <div class="px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-center min-w-[70px]">
-                            <span class="font-black text-lg text-white">${match.score}</span>
-                          </div>
-                        </div>
+                ${state.liveState?.parsed?.matches?.map(match => `
+                  <div class="p-6 bg-slate-900/50 border border-slate-850 rounded-2xl flex items-center justify-between">
+                    <div>
+                      <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">${match.group || 'Csoportkör'}</span>
+                      <div class="space-y-1">
+                        <div class="font-bold text-sm text-slate-200">${match.teamA}</div>
+                        <div class="font-bold text-sm text-slate-200">${match.teamB}</div>
                       </div>
-                      ${match.videoLinks && match.videoLinks.length > 0 ? `
-                        <div class="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap gap-2">
-                          ${match.videoLinks.map(vid => `
-                            <a href="${vid.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-xs font-bold text-slate-300 rounded-lg flex items-center space-x-1.5 transition-all">
-                              <span>${vid.lang}</span>
-                              <span class="text-slate-400">${vid.label}:</span>
-                              <span class="text-emerald-400 truncate max-w-[120px]">${vid.text}</span>
-                              <i data-lucide="external-link" class="w-3 h-3 text-slate-500"></i>
-                            </a>
-                          `).join('')}
-                        </div>
-                      ` : ''}
                     </div>
-                  `;
-                }).join('') || '<div class="col-span-2 text-center text-slate-500 italic py-4">Nincs betöltött mérkőzés adatbázisból.</div>'}
+                    <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center">
+                      <span class="font-mono font-black text-lg text-white">${match.score}</span>
+                    </div>
+                  </div>
+                `).join('') || '<div class="col-span-2 text-center text-slate-600 italic py-4">Nincs betöltött mérkőzés.</div>'}
               </div>
             </div>
-
-            <!-- CEREMONIES -->
-            ${state.liveState?.parsed?.ceremonies && state.liveState.parsed.ceremonies.length > 0 ? `
-              <div class="space-y-4">
-                <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
-                  <i data-lucide="sparkles" class="w-4 h-4 text-emerald-400 animate-pulse"></i>
-                  <span>Kiemelt Megnyitó Ünnepségek</span>
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  ${state.liveState.parsed.ceremonies.map(cer => `
-                    <div class="bg-slate-900/40 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
-                      <div>
-                        <div class="flex items-center justify-between mb-3">
-                          <span class="text-slate-400 font-bold text-[10px] tracking-widest uppercase">${cer.time}</span>
-                          <span class="text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded text-[10px] font-black border border-emerald-500/10">LEZAJLOTT</span>
-                        </div>
-                        <h4 class="font-extrabold text-base text-slate-100 mb-2">${cer.title}</h4>
-                        <p class="text-xs text-slate-400 flex items-center space-x-1.5">
-                          <span>📍</span>
-                          <span>${cer.place}</span>
-                        </p>
-                      </div>
-                      ${cer.videoLinks && cer.videoLinks.length > 0 ? `
-                        <div class="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap gap-2">
-                          ${cer.videoLinks.map(vid => `
-                            <a href="${vid.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-slate-950 hover:bg-slate-800 border border-slate-850 text-xs font-bold text-slate-300 rounded-lg flex items-center space-x-1.5 transition-all">
-                              <span>${vid.lang}</span>
-                              <span class="text-slate-400">${vid.label}:</span>
-                              <span class="text-emerald-400">${vid.text}</span>
-                              <i data-lucide="external-link" class="w-3 h-3 text-slate-500"></i>
-                            </a>
-                          `).join('')}
-                        </div>
-                      ` : ''}
-                    </div>
-                  `).join('')}
-                </div>
-              </div>
-            ` : ''}
           </div>
         `;
       }
 
-      // 3. ADMINISZTRÁCIÓS NÉZET
+      // --- TAB 3: ADMINISZTRÁCIÓS PANEL ---
       if (state.activeTab === 'admin') {
         if (!state.isAdminAuthenticated) {
           html += `
             <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl space-y-4 max-w-md mx-auto">
               <div class="flex flex-col items-center text-center space-y-2">
-                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-850 text-emerald-400">
-                  <i data-lucide="lock" class="w-6 h-6"></i>
-                </div>
+                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-850 text-emerald-400"><i data-lucide="lock" class="w-6 h-6"></i></div>
                 <h3 class="font-black text-lg text-slate-100">Közvetítői Hozzáférés</h3>
-                <p class="text-xs text-slate-400 max-w-xs">Az adminisztrátori felület eléréséhez és a valós idejű adások módosításához kérlek írd be a kódot.</p>
+                <p class="text-xs text-slate-400 max-w-xs">Az adások és az ágrajz éles módosításához kérlek írd be a kódot.</p>
               </div>
-
               <form id="form-admin-login" class="space-y-4 pt-2">
                 <div>
                   <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Belépési Kód</label>
-                  <input
-                    type="password"
-                    id="input-admin-password"
-                    value="${state.adminPasswordInput}"
-                    placeholder="Írd be az admin jelszót..."
-                    class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-slate-600"
-                  />
+                  <input type="password" id="input-admin-password" value="${state.adminPasswordInput}" placeholder="Alapértelmezett: foci2026" class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" />
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg">
-                  Belépés a Szerkesztőbe
-                </button>
+                <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg">Belépés</button>
               </form>
             </div>
           `;
         } else {
           html += `
-            <div class="max-w-3xl mx-auto space-y-6">
-              <!-- API CONTROL CENTER -->
-              <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl space-y-6">
-                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                  <div class="flex items-center space-x-2">
-                    <i data-lucide="radio" class="w-5 h-5 text-blue-400 animate-pulse"></i>
-                    <h3 class="font-black text-slate-100">Élő Sport API Integráció (RapidAPI)</h3>
-                  </div>
-                  <button id="btn-admin-logout" class="text-xs font-bold text-slate-400 hover:text-white">Kijelentkezés</button>
+            <div class="max-w-4xl mx-auto space-y-8">
+              <!-- Ágrajz mentés gomb -->
+              <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h3 class="font-black text-lg text-slate-100 flex items-center gap-2">
+                    <i data-lucide="radio" class="text-blue-400 animate-pulse"></i>
+                    <span>Közvetítő Panel</span>
+                  </h3>
+                  <p class="text-xs text-slate-400 mt-1">Módosítsd az ágrajz eredményeit, majd szinkronizáld őket a felhővel.</p>
                 </div>
+                <button id="btn-save-all-cloud" ${state.isPublishing ? 'disabled' : ''} class="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 text-slate-950 font-black py-3 px-6 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2">
+                  ${state.isPublishing ? '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>' : '<i data-lucide="upload" class="w-4 h-4"></i>'}
+                  <span>Változtatások Élesítése a Weben</span>
+                </button>
+              </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div class="space-y-4">
-                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-850 flex items-center justify-between">
-                      <div>
-                        <span class="text-xs font-black text-slate-200 block">Élő API Kapcsolat</span>
-                        <span class="text-[10px] text-slate-400">Automatikus lekérdezések a háttérben</span>
-                      </div>
-                      <input type="checkbox" id="check-api-active" ${state.isApiActive ? 'checked' : ''} class="w-5 h-5 accent-emerald-500 cursor-pointer" />
-                    </div>
-
-                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-850 flex items-center justify-between">
-                      <div>
-                        <span class="text-xs font-black text-slate-200 block">Demó (Mock) Adatok</span>
-                        <span class="text-[10px] text-slate-400">RapidAPI kulcs nélküli bemutatóhoz</span>
-                      </div>
-                      <input type="checkbox" id="check-mock-api" ${state.useMockApi ? 'checked' : ''} class="w-5 h-5 accent-emerald-500 cursor-pointer" />
-                    </div>
-
-                    <div class="space-y-2">
-                      <label class="block text-xs font-bold text-slate-300">Frissítési gyakoriság</label>
-                      <input type="range" id="range-api-interval" min="15" max="300" step="15" value="${state.apiInterval}" class="w-full accent-emerald-500" />
-                      <div class="flex justify-between text-[10px] text-slate-400 font-bold">
-                        <span>15mp</span>
-                        <span class="text-emerald-400">${state.apiInterval} másodpercenként</span>
-                        <span>5perc</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="space-y-4">
-                    <div>
-                      <label class="block text-[10px] text-slate-400 uppercase font-black mb-1">API Match (Fixture) ID</label>
-                      <input type="text" id="input-api-fixture-id" value="${state.apiFixtureId}" class="w-full bg-slate-950 border border-slate-850 rounded-xl px-3.5 py-2 text-xs text-white focus:border-emerald-500 transition-all font-mono" />
-                    </div>
-                    <div>
-                      <label class="block text-[10px] text-slate-400 uppercase font-black mb-1">API Végpont (Endpoint)</label>
-                      <input type="text" id="input-api-endpoint" value="${state.apiEndpoint}" ${state.useMockApi ? 'disabled' : ''} class="w-full bg-slate-950 border border-slate-850 disabled:opacity-40 rounded-xl px-3.5 py-2 text-xs text-white focus:border-emerald-500 transition-all font-mono" />
-                    </div>
-                    <div>
-                      <label class="block text-[10px] text-slate-400 uppercase font-black mb-1">RapidAPI Key (Hitelestő Kulcs)</label>
-                      <input type="password" id="input-api-key" value="${state.apiKey}" ${state.useMockApi ? 'disabled' : ''} class="w-full bg-slate-950 border border-slate-850 disabled:opacity-40 rounded-xl px-3.5 py-2 text-xs text-white focus:border-emerald-500 transition-all font-mono" />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- API LOGS -->
-                <div class="bg-slate-950 rounded-2xl border border-slate-850 p-4 space-y-3">
-                  <div class="flex items-center space-x-2 text-xs text-slate-300 font-bold uppercase">
-                    <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
-                    <span>Élő Kapcsolódási Konzolfájl (Logs)</span>
-                  </div>
-                  <div class="h-40 overflow-y-auto font-mono text-[10px] p-3 bg-slate-900 border border-slate-850 rounded-xl space-y-1.5 scrollbar-thin">
-                    ${state.apiLogs.length === 0 
-                      ? `<p class="text-slate-600 italic">Várakozás az API kapcsolat elindítására...</p>` 
-                      : state.apiLogs.map(log => `
-                        <div class="flex space-x-2">
-                          <span class="text-slate-500">[${log.time}]</span>
-                          <span class="${log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'error' ? 'text-rose-400 font-bold' : 'text-slate-300'}">
-                            ${log.message}
-                          </span>
+              <!-- ÁGRAJZ MECCSEK SZERKESZTŐJE -->
+              <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl space-y-6">
+                <h4 class="text-xs text-slate-400 font-black tracking-widest uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
+                  <i data-lucide="git-merge" class="text-emerald-400"></i>
+                  <span>Kieséses Ágrajz Kezelő Panel</span>
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  ${Object.keys(state.liveState?.bracket || defaultBracketMatches).filter(k => k.startsWith('M')).map(key => {
+                    const m = (state.liveState?.bracket || defaultBracketMatches)[key];
+                    return `
+                      <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+                          <span class="text-emerald-400 font-black font-mono bg-emerald-500/10 px-2 py-0.5 rounded">${m.id}</span>
+                          <span>${m.venue || ''}</span>
                         </div>
-                      `).join('')}
-                  </div>
+                        <div class="grid grid-cols-2 gap-3">
+                          <div>
+                            <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamA}</label>
+                            <input type="text" value="${m.scoreA}" placeholder="Gól" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono" />
+                            <button data-match="${m.id}" data-winner="${m.teamA}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                          </div>
+                          <div>
+                            <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamB}</label>
+                            <input type="text" value="${m.scoreB}" placeholder="Gól" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono" />
+                            <button data-match="${m.id}" data-winner="${m.teamB}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
                 </div>
               </div>
 
-              <!-- MANUAL MARKDOWN PUBLISH -->
+              <!-- MANUÁLIS MARKDOWN FELTÖLTÉS -->
               <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
                 <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
-                  <i data-lucide="file-text" class="w-5 h-5 text-emerald-400"></i>
-                  <h3 class="font-black text-slate-100">Kézi Közvetítés (Markdown Felülbírálás)</h3>
+                  <i data-lucide="file-text" class="text-emerald-400"></i>
+                  <h3 class="font-black text-slate-100">Kézi Közvetítés (Markdown Napló)</h3>
                 </div>
-                <div class="space-y-2">
-                  <p class="text-[10px] text-slate-400">Manuális feltöltéshez másold be ide az AI által írt napló szövegét. Ezzel az élő API frissítések leállnak.</p>
-                  <textarea id="textarea-markdown-input" rows="6" class="w-full bg-slate-950 border border-slate-850 focus:border-emerald-500 rounded-2xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-all">${state.markdownInput}</textarea>
-                </div>
-                <button id="btn-manual-publish" ${state.isPublishing ? 'disabled' : ''} class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 disabled:from-slate-800 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
-                  ${state.isPublishing ? '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>' : '<i data-lucide="upload" class="w-4 h-4"></i>'}
-                  <span>Kézi Közvetítés Publikálása</span>
+                <textarea id="textarea-markdown-input" rows="6" placeholder="Ide másold be az eredménykövető markdown szöveget..." class="w-full bg-slate-950 border border-slate-850 rounded-2xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-emerald-500">${state.markdownInput}</textarea>
+                <button id="btn-manual-publish" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
+                  <i data-lucide="upload"></i>
+                  <span>Csoportkör Napló Publikálása</span>
                 </button>
               </div>
             </div>
@@ -647,12 +572,9 @@
         }
       }
 
-      // 4. FOOTER ÉS ÁLLAPOT VISSZAJELZŐK
       if (state.statusMessage) {
         html += `
-          <div class="max-w-md mx-auto mt-6 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${
-            state.statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'
-          }">
+          <div class="max-w-md mx-auto mt-6 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${state.statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}">
             <i data-lucide="${state.statusMessage.type === 'success' ? 'check' : 'alert-circle'}" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-semibold">${state.statusMessage.text}</span>
           </div>
@@ -663,28 +585,31 @@
         </main>
         <footer class="border-t border-slate-900 bg-slate-950 text-slate-500 text-xs py-8 mt-16">
           <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
-            <p class="font-semibold">⚽ 2026-os Labdarúgó-világbajnokság Élő Közvetítő Rendszer</p>
-            <p class="text-[10px] text-slate-600">Ez a weboldal valós idejű, biztonságos felhőalapú Firestore adatbázist használ a közvetítések másodperces szinkronizálására.</p>
+            <p class="font-semibold">⚽ FIFA VB 2026 – Valós Idejű Rendszer</p>
+            <p class="text-[10px] text-slate-600">Ez a weboldal felhőalapú Firestore adatbázist használ a közvetítések másodperces szinkronizálására.</p>
           </div>
         </footer>
       `;
 
       container.innerHTML = html;
-      
-      // Ikonok betöltése a Lucide könyvtár segítségével
       lucide.createIcons();
 
-      // --- ESEMÉNYKEZELŐK REGISZTRÁLÁSA ---
-      document.getElementById('btn-tab-viewer')?.addEventListener('click', () => {
-        state.activeTab = 'viewer';
-        render();
-      });
-      document.getElementById('btn-tab-admin')?.addEventListener('click', () => {
-        state.activeTab = 'admin';
-        render();
+      // --- NAVIGÁCIÓS ESEMÉNYEK ---
+      document.getElementById('btn-tab-bracket')?.addEventListener('click', () => { state.activeTab = 'bracket'; render(); });
+      document.getElementById('btn-tab-viewer')?.addEventListener('click', () => { state.activeTab = 'viewer'; render(); });
+      document.getElementById('btn-tab-admin')?.addEventListener('click', () => { state.activeTab = 'admin'; render(); });
+
+      document.getElementById('btn-bracket-left')?.addEventListener('click', () => { state.bracketTab = 'left'; render(); });
+      document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
+      document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
+
+      // Csatlakozás leválasztása (újraindítja a beállítást)
+      document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
+        localStorage.removeItem('vb_2026_firebase_config');
+        window.location.reload();
       });
 
-      // Login form eseménykezelő
+      // Login form
       document.getElementById('form-admin-login')?.addEventListener('submit', (e) => {
         e.preventDefault();
         const pwd = document.getElementById('input-admin-password').value;
@@ -698,79 +623,88 @@
         render();
       });
 
-      // Logout eseménykezelő
-      document.getElementById('btn-admin-logout')?.addEventListener('click', () => {
-        state.isAdminAuthenticated = false;
+      // Szerkesztő inputok figyelése (Ágrajz)
+      document.querySelectorAll('.bracket-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const matchId = e.target.dataset.match;
+          const side = e.target.dataset.side;
+          const val = e.target.value;
+
+          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+          if (!state.liveState.bracket) state.liveState.bracket = JSON.parse(JSON.stringify(defaultBracketMatches));
+
+          state.liveState.bracket[matchId][`score${side}`] = val;
+        });
+      });
+
+      // Továbbjutó léptetése az Ágrajzon
+      document.querySelectorAll('.btn-select-winner').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const matchId = e.currentTarget.dataset.match;
+          const winner = e.currentTarget.dataset.winner;
+
+          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+          if (!state.liveState.bracket) state.liveState.bracket = JSON.parse(JSON.stringify(defaultBracketMatches));
+
+          const b = state.liveState.bracket;
+          b[matchId].winner = winner;
+
+          const nextMatchId = b[matchId].nextMatch;
+          const slot = b[matchId].slot;
+
+          if (nextMatchId && slot) {
+            b[nextMatchId][slot] = winner;
+          }
+          render();
+        });
+      });
+
+      // Minden mentése a felhőbe
+      document.getElementById('btn-save-all-cloud')?.addEventListener('click', async () => {
+        state.isPublishing = true;
+        state.statusMessage = { type: 'info', text: 'Változtatások feltöltése...' };
         render();
+
+        try {
+          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
+          await setDoc(docRef, {
+            ...state.liveState,
+            updatedAt: new Date().toISOString()
+          });
+          state.statusMessage = { type: 'success', text: 'Az Ágrajz és minden eredmény sikeresen frissült!' };
+        } catch(err) {
+          state.statusMessage = { type: 'error', text: 'Nem sikerült menteni: ' + err.message };
+        } finally {
+          state.isPublishing = false;
+          render();
+        }
       });
 
-      // API checkboxok és beállítások eseménykezelői
-      const checkApiActive = document.getElementById('check-api-active');
-      checkApiActive?.addEventListener('change', async (e) => {
-        state.isApiActive = e.target.checked;
-        addLog(`Élő API státusz módosítva: ${state.isApiActive ? 'AKTÍV' : 'INAKTÍV'}`);
-        await updateCloudApiConfig();
-      });
-
-      const checkMockApi = document.getElementById('check-mock-api');
-      checkMockApi?.addEventListener('change', async (e) => {
-        state.useMockApi = e.target.checked;
-        addLog(`Demo (Mock) adatok státusza módosítva: ${state.useMockApi ? 'BEKAPCSOLVA' : 'KIKAPCSOLVA'}`);
-        await updateCloudApiConfig();
-      });
-
-      const rangeInterval = document.getElementById('range-api-interval');
-      rangeInterval?.addEventListener('change', (e) => {
-        state.apiInterval = parseInt(e.target.value);
-        addLog(`Lekérdezési frekvencia módosítva: ${state.apiInterval} másodpercre`);
-        render();
-      });
-
-      const inputFixtureId = document.getElementById('input-api-fixture-id');
-      inputFixtureId?.addEventListener('blur', async (e) => {
-        state.apiFixtureId = e.target.value;
-        addLog(`API Fixture ID frissítve: ${state.apiFixtureId}`);
-        await updateCloudApiConfig();
-      });
-
-      const inputEndpoint = document.getElementById('input-api-endpoint');
-      inputEndpoint?.addEventListener('blur', (e) => {
-        state.apiEndpoint = e.target.value;
-      });
-
-      const inputApiKey = document.getElementById('input-api-key');
-      inputApiKey?.addEventListener('blur', (e) => {
-        state.apiKey = e.target.value;
-      });
-
-      const txtMarkdown = document.getElementById('textarea-markdown-input');
-      txtMarkdown?.addEventListener('input', (e) => {
+      // Markdown mentése
+      document.getElementById('textarea-markdown-input')?.addEventListener('input', (e) => {
         state.markdownInput = e.target.value;
       });
 
-      // Kézi mentés eseménykezelő
       document.getElementById('btn-manual-publish')?.addEventListener('click', async () => {
         state.isPublishing = true;
-        state.statusMessage = { type: 'info', text: 'Mentés folyamatban...' };
+        state.statusMessage = { type: 'info', text: 'Szinkronizálás...' };
         render();
 
         try {
           const parsed = parseMarkdownToJSON(state.markdownInput);
-          if (!parsed || parsed.matches.length === 0) {
-            throw new Error("Nem sikerült érvényes mérkőzésadatokat kinyerni.");
-          }
+          if (!parsed) throw new Error("Érvénytelen Markdown!");
+
+          if (!state.liveState) state.liveState = { bracket: defaultBracketMatches };
+          state.liveState.parsed = parsed;
+          state.liveState.rawMarkdown = state.markdownInput;
 
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
           await setDoc(docRef, {
-            rawMarkdown: state.markdownInput,
-            parsed,
-            isApiActive: false,
+            ...state.liveState,
             updatedAt: new Date().toISOString()
           });
-
-          state.statusMessage = { type: 'success', text: 'Sikeresen publikálva!' };
-          state.isApiActive = false;
-        } catch (err) {
+          state.statusMessage = { type: 'success', text: 'Kézi közvetítés sikeresen publikálva!' };
+        } catch(err) {
           state.statusMessage = { type: 'error', text: err.message };
         } finally {
           state.isPublishing = false;
@@ -779,111 +713,91 @@
       });
     };
 
-    // --- CLOUD CONFIG UPDATE UTILITY ---
-    const updateCloudApiConfig = async () => {
-      if (!db || !auth.currentUser) return;
+    // --- SETUP SAVER UTILITY ---
+    const saveFirebaseSetup = () => {
+      const configStr = document.getElementById('setup-config').value;
+      const customId = document.getElementById('setup-appid').value;
+
       try {
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-        const currentState = state.liveState || { rawMarkdown: "", parsed: { ceremonies: [], matches: [] } };
-        await setDoc(docRef, {
-          ...currentState,
-          isApiActive: state.isApiActive,
-          apiFixtureId: state.apiFixtureId,
-          useMockApi: state.useMockApi,
-          updatedAt: new Date().toISOString()
-        });
-      } catch (err) {
-        console.error("Hiba a konfiguráció mentésekor:", err);
+        const parsed = JSON.parse(configStr);
+        localStorage.setItem('vb_2026_firebase_config', JSON.stringify(parsed));
+        localStorage.setItem('vb_2026_appid', customId);
+        window.location.reload();
+      } catch (e) {
+        alert("Hiba: Biztos vagy benne, hogy helyes JSON-t másoltál be?");
       }
     };
 
-    // --- FŐ PROGRAMINDÍTÓ (START) ---
+    // --- PROGRAMINDÍTÓ (ONLOAD) ---
     window.onload = async () => {
+      let config = null;
+
+      // 1. Megpróbáljuk beolvasni a beágyazott configot
+      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        try {
+          config = JSON.parse(__firebase_config);
+          appId = typeof __app_id !== 'undefined' ? __app_id : 'foci-vb-2026';
+        } catch(e) {}
+      }
+
+      // 2. Ha nincs, megnézzük a helyi tárolót (Vercel futás esetére)
+      if (!config) {
+        const localConfig = localStorage.getItem('vb_2026_firebase_config');
+        const localAppId = localStorage.getItem('vb_2026_appid');
+        if (localConfig) {
+          try {
+            config = JSON.parse(localConfig);
+            appId = localAppId || 'foci-vb-2026';
+          } catch(e) {}
+        }
+      }
+
+      // Ha nincs meg a config, megállunk és megkérjük a felhasználót a kitöltésre
+      if (!config) {
+        render(); // Varázsló képernyő kirajzolása
+        return;
+      }
+
+      // 3. Firebase inicializálása
       try {
-        // Környezeti változók kinyerése
-        appId = typeof __app_id !== 'undefined' ? __app_id : 'foci-vb-2026';
-        
-        // Konfiguráció betöltése
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(config);
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // Firebase Auth indítása FIRST (Rule 3)
+        // Anonymous Auth (Rule 3)
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
         } else {
           await signInAnonymously(auth);
         }
-        
-        addLog("Firebase hitelesítés sikeres.", "success");
 
-        // Real-time Firestore hallgató indítása (Rule 1 & Rule 2)
+        // Valós idejű szinkronizáció elindítása
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
         onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
-            const cloudData = docSnap.data();
-            state.liveState = cloudData;
-            
-            if (cloudData.isApiActive !== undefined) state.isApiActive = cloudData.isApiActive;
-            if (cloudData.apiFixtureId !== undefined) state.apiFixtureId = cloudData.apiFixtureId;
-            if (cloudData.useMockApi !== undefined) state.useMockApi = cloudData.useMockApi;
-            
-            render();
+            state.liveState = docSnap.data();
+            if (state.liveState.rawMarkdown) {
+              state.markdownInput = state.liveState.rawMarkdown;
+            }
+          } else {
+            // Első üres állapot inicializálása
+            state.liveState = {
+              bracket: defaultBracketMatches,
+              parsed: { ceremonies: [], matches: [] }
+            };
           }
+          render();
         }, (err) => {
-          console.error("Firestore hiba:", err);
-          addLog("Firestore adat hiba: " + err.message, "error");
+          console.error("Firestore Error:", err);
         });
 
       } catch (err) {
-        console.error("Kezdeti betöltési hiba:", err);
+        console.error("Csatlakozási hiba:", err);
+        localStorage.removeItem('vb_2026_firebase_config');
+        alert("Nem sikerült csatlakozni a megadott Firebase projekthez. Ellenőrizd a konzol beállításaidat!");
+        window.location.reload();
       }
     };
-
-    // --- API POLLING TIMER LOOP ---
-    setInterval(async () => {
-      if (state.isApiActive && state.isAdminAuthenticated) {
-        addLog("Automatikus sport API frissítés kezdeményezése...", "info");
-        try {
-          let apiResponseData = null;
-
-          if (state.useMockApi) {
-            apiResponseData = getMockFootballApiResponse(state.apiFixtureId);
-            addLog("Minta (Mock) adatok sikeresen beolvasva az API modulból.", "success");
-          } else {
-            if (!state.apiKey) {
-              throw new Error("Az élő lekérdezéshez meg kell adnod egy érvényes RapidAPI kulcsot!");
-            }
-            const url = `${state.apiEndpoint}?id=${state.apiFixtureId}`;
-            const response = await fetch(url, {
-              method: 'GET',
-              headers: {
-                'x-rapidapi-key': state.apiKey,
-                'x-rapidapi-host': 'api-football-v1.p.rapidapi.com'
-              }
-            });
-            if (!response.ok) throw new Error(`API Válasz hiba: ${response.status}`);
-            apiResponseData = await response.json();
-            addLog("Valódi API válasz sikeresen feldolgozva.", "success");
-          }
-
-          const merged = parseAndMergeApiData(apiResponseData, state.apiFixtureId);
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-          await setDoc(docRef, {
-            ...merged,
-            isApiActive: true,
-            apiFixtureId: state.apiFixtureId,
-            useMockApi: state.useMockApi,
-            updatedAt: new Date().toISOString()
-          });
-
-        } catch (err) {
-          addLog("API hiba: " + err.message, "error");
-        }
-      }
-    }, state.apiInterval * 1000);
-
   </script>
 </body>
 </html>
