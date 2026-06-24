@@ -39,20 +39,20 @@
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-slate-950">
 
   <div id="app">
-    <!-- A JavaScript fogja dinamikusan feltölteni tartalommal -->
+    <!-- Dinamikus betöltő képernyő -->
     <div class="min-h-screen flex flex-col items-center justify-center">
       <div class="animate-spin text-emerald-500 w-12 h-12 border-4 border-current border-t-transparent rounded-full mb-4"></div>
       <p class="text-slate-400 font-medium">Élő kapcsolat felépítése a rendszerrel...</p>
     </div>
   </div>
 
-  <!-- Firebase SDK modulok beültetése CDN-ről -->
+  <!-- Firebase SDK modulok CDN-ről -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // --- GLOBÁLIS ALKALMAZÁS ÁLLAPOT (STATE) ---
+    // --- GLOBÁLIS ÁLLAPOTKEZELÉS (STATE) ---
     const state = {
       activeTab: 'bracket', // 'bracket' | 'viewer' | 'admin'
       bracketTab: 'left', // 'left' | 'right' | 'finals'
@@ -70,14 +70,14 @@
       adminPasswordInput: '',
       markdownInput: '',
       
-      // Kézi mentéshez és konfigurációhoz
+      // Manuális csatlakozáshoz
       firebaseConfigRaw: '',
       customAppId: 'foci-vb-2026'
     };
 
     let auth = null, db = null, appId = 'foci-vb-2026';
 
-    // Alapértelmezett ágrajz struktúra
+    // Alapértelmezett üres ágrajz
     const defaultBracketMatches = {
       M73: { id: "M73", date: "jún 28.", venue: "Los Angeles", teamA: "A csoport 2. hely", teamB: "B csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamA" },
       M74: { id: "M74", date: "jún 28.", venue: "San Francisco", teamA: "Mexikó", teamB: "C/D/E/F 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamB" },
@@ -119,7 +119,7 @@
       render();
     };
 
-    // --- MARKDOWN TO JSON PARSER ---
+    // --- PARSER: MARKDOWN TO JSON ---
     const parseMarkdownToJSON = (md) => {
       if (!md) return null;
       const data = {
@@ -168,7 +168,7 @@
       return data;
     };
 
-    // --- BRACKET CARD RENDER ---
+    // --- CARD DRAW UTIL FOR BRACKET ---
     const renderBracketCard = (matchId) => {
       const b = state.liveState?.bracket || defaultBracketMatches;
       const m = b[matchId];
@@ -197,33 +197,28 @@
       `;
     };
 
-    // --- HTML RENDER ENGINE ---
+    // --- TEMPLATE DRAW AND EVENT BIND ---
     const render = () => {
       const container = document.getElementById('app');
       if (!container) return;
 
-      // HA NINCS FIREBASE BEÁLLÍTÁS, JELENÍTSÜK MEG A VARÁZSLÓT!
+      // CONFIG NINCS MEGADVA: MUTASSUK A BEÁLLÍTÁSI VARÁZSLÓT
       if (!db) {
         container.innerHTML = `
           <div class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
             <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
               <div class="flex items-center space-x-3 text-emerald-400">
                 <i data-lucide="shield-alert" class="w-8 h-8"></i>
-                <h2 class="text-xl font-black tracking-tight">Firebase Kapcsolat Szükséges</h2>
+                <h2 class="text-xl font-black tracking-tight">Környezeti Beállítás Szükséges</h2>
               </div>
               
               <p class="text-sm text-slate-400 leading-relaxed">
-                Ez a weboldal a saját Vercel-szervereden fut, ezért a valós idejű szinkronizáláshoz meg kell adnod a saját **Firebase** kulcsaidat. Ezek az adatok biztonságosan, kizárólag a te böngésződben lesznek tárolva.
+                Ha ezt az oldalt először indítod el és még nem állítottad be a **Vercel Környezeti Változókat** (Environment Variables), akkor itt manuálisan is megadhatod a Firebase konfigurációt a böngésződnek.
               </p>
 
               <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-500">
-                <p class="font-bold text-slate-400">Lépések a beállításhoz:</p>
-                <ol class="list-decimal list-inside space-y-1">
-                  <li>Lépj be a <a href="https://console.firebase.google.com" target="_blank" class="text-emerald-400 underline">Firebase Console</a> oldalra és hozz létre egy projektet.</li>
-                  <li>Kapcsold be az <strong>Anonymous Authentication</strong>-t az Auth fülön.</li>
-                  <li>Hozz létre egy <strong>Cloud Firestore</strong> adatbázist.</li>
-                  <li>Projekt Beállítások -> Válaszd ki a Webalkalmazást (&lt;/&gt;) és másold ki a beállításokat tartalmazó JSON-t.</li>
-                </ol>
+                <p class="font-bold text-slate-400">Hol találod a Vercel beállítást?</p>
+                <p>A legkényelmesebb, ha a Vercel konzolodon beállítod a <strong class="text-slate-300">FIREBASE_CONFIG</strong> nevű környezeti változót a Firebase Console-ból másolt JSON kulcsokkal.</p>
               </div>
 
               <div class="space-y-4">
@@ -232,8 +227,8 @@
                   <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID (Választható)</label>
-                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white" />
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
                 </div>
                 <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
                   <i data-lucide="check"></i>
@@ -265,10 +260,10 @@
             </div>
 
             <div class="flex items-center space-x-1 sm:space-x-2">
-              <button id="btn-tab-bracket" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+              <button id="btn-tab-bracket" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
                 <span class="flex items-center space-x-1.5"><i data-lucide="git-merge" class="w-4 h-4"></i><span>Ágrajz</span></span>
               </button>
-              <button id="btn-tab-viewer" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+              <button id="btn-tab-viewer" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
                 <span class="flex items-center space-x-1.5"><i data-lucide="tv" class="w-4 h-4"></i><span>Közvetítés</span></span>
               </button>
               <button id="btn-tab-admin" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'admin' ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
@@ -290,12 +285,10 @@
                 <span class="font-semibold text-emerald-400">Élő adatbázis kapcsolat</span>
               </div>
             </div>
-            <div class="flex items-center space-x-3">
-              <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
-                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                <span>Projekt leválasztása</span>
-              </button>
-            </div>
+            <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
+              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <span>Projekt leválasztása</span>
+            </button>
           </div>
         </div>
 
@@ -312,10 +305,9 @@
                   <i data-lucide="award" class="text-emerald-400"></i>
                   <span>Kieséses Szakasz (32 Csapat)</span>
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Kövesd végig az egyenes kieséses meccsek alakulását és eredményeit.</p>
+                <p class="text-xs text-slate-400 mt-1">Kövesd végig az egyenes kieséses szakasz alakulását.</p>
               </div>
 
-              <!-- Ágrajz al-tabok -->
               <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 self-start">
                 <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Bal Ág</button>
                 <button id="btn-bracket-right" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'right' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Jobb Ág</button>
@@ -388,7 +380,7 @@
                       ${renderBracketCard("M104")}
                     </div>
                     <div>
-                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
+                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Bronzmérkőzés</h3>
                       ${renderBracketCard("M103")}
                     </div>
                   </div>
@@ -399,7 +391,7 @@
         `;
       }
 
-      // --- TAB 2: NÉZŐI KÖZVETÍTÉS FEED ---
+      // --- TAB 2: ÉLŐ KÖZVETÍTÉSEK ---
       if (state.activeTab === 'viewer') {
         html += `
           <div class="space-y-8">
@@ -458,7 +450,7 @@
               </div>
             `}
 
-            <!-- OTHER MATCHES GRID -->
+            <!-- GONDOSAN RENDEZETT CSOPORTMECCSEK -->
             <div class="space-y-4">
               <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -485,7 +477,7 @@
         `;
       }
 
-      // --- TAB 3: ADMINISZTRÁCIÓS PANEL ---
+      // --- TAB 3: ADMIN PANEL ---
       if (state.activeTab === 'admin') {
         if (!state.isAdminAuthenticated) {
           html += `
@@ -540,13 +532,13 @@
                         <div class="grid grid-cols-2 gap-3">
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamA}</label>
-                            <input type="text" value="${m.scoreA}" placeholder="Gól" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono" />
-                            <button data-match="${m.id}" data-winner="${m.teamA}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                            <input type="text" value="${m.scoreA}" placeholder="Gól" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <button data-match="${m.id}" data-winner="${m.teamA}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
                           </div>
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamB}</label>
-                            <input type="text" value="${m.scoreB}" placeholder="Gól" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono" />
-                            <button data-match="${m.id}" data-winner="${m.teamB}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                            <input type="text" value="${m.scoreB}" placeholder="Gól" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <button data-match="${m.id}" data-winner="${m.teamB}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
                           </div>
                         </div>
                       </div>
@@ -594,7 +586,7 @@
       container.innerHTML = html;
       lucide.createIcons();
 
-      // --- NAVIGÁCIÓS ESEMÉNYEK ---
+      // --- NAVIGÁCIÓS BINDINGEK ---
       document.getElementById('btn-tab-bracket')?.addEventListener('click', () => { state.activeTab = 'bracket'; render(); });
       document.getElementById('btn-tab-viewer')?.addEventListener('click', () => { state.activeTab = 'viewer'; render(); });
       document.getElementById('btn-tab-admin')?.addEventListener('click', () => { state.activeTab = 'admin'; render(); });
@@ -603,7 +595,7 @@
       document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
       document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
 
-      // Csatlakozás leválasztása (újraindítja a beállítást)
+      // Leválasztás esemény
       document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
         localStorage.removeItem('vb_2026_firebase_config');
         window.location.reload();
@@ -623,7 +615,7 @@
         render();
       });
 
-      // Szerkesztő inputok figyelése (Ágrajz)
+      // Ágrajz inputok figyelése és frissítése
       document.querySelectorAll('.bracket-input').forEach(input => {
         input.addEventListener('input', (e) => {
           const matchId = e.target.dataset.match;
@@ -637,7 +629,7 @@
         });
       });
 
-      // Továbbjutó léptetése az Ágrajzon
+      // Győztes kiválasztása
       document.querySelectorAll('.btn-select-winner').forEach(btn => {
         btn.addEventListener('click', (e) => {
           const matchId = e.currentTarget.dataset.match;
@@ -659,10 +651,10 @@
         });
       });
 
-      // Minden mentése a felhőbe
+      // Változások szinkronizálása a felhővel
       document.getElementById('btn-save-all-cloud')?.addEventListener('click', async () => {
         state.isPublishing = true;
-        state.statusMessage = { type: 'info', text: 'Változtatások feltöltése...' };
+        state.statusMessage = { type: 'info', text: 'Feltöltés folyamatban...' };
         render();
 
         try {
@@ -671,28 +663,28 @@
             ...state.liveState,
             updatedAt: new Date().toISOString()
           });
-          state.statusMessage = { type: 'success', text: 'Az Ágrajz és minden eredmény sikeresen frissült!' };
+          state.statusMessage = { type: 'success', text: 'Az Ágrajz sikeresen szinkronizálva lett az adatbázissal!' };
         } catch(err) {
-          state.statusMessage = { type: 'error', text: 'Nem sikerült menteni: ' + err.message };
+          state.statusMessage = { type: 'error', text: 'Hiba a mentés során: ' + err.message };
         } finally {
           state.isPublishing = false;
           render();
         }
       });
 
-      // Markdown mentése
+      // Manuális Markdown elmentés
       document.getElementById('textarea-markdown-input')?.addEventListener('input', (e) => {
         state.markdownInput = e.target.value;
       });
 
       document.getElementById('btn-manual-publish')?.addEventListener('click', async () => {
         state.isPublishing = true;
-        state.statusMessage = { type: 'info', text: 'Szinkronizálás...' };
+        state.statusMessage = { type: 'info', text: 'Napló publikálása...' };
         render();
 
         try {
           const parsed = parseMarkdownToJSON(state.markdownInput);
-          if (!parsed) throw new Error("Érvénytelen Markdown!");
+          if (!parsed) throw new Error("A megadott formátum hibás vagy hiányos!");
 
           if (!state.liveState) state.liveState = { bracket: defaultBracketMatches };
           state.liveState.parsed = parsed;
@@ -703,7 +695,7 @@
             ...state.liveState,
             updatedAt: new Date().toISOString()
           });
-          state.statusMessage = { type: 'success', text: 'Kézi közvetítés sikeresen publikálva!' };
+          state.statusMessage = { type: 'success', text: 'A Csoportkör Napló sikeresen frissítve lett a weben!' };
         } catch(err) {
           state.statusMessage = { type: 'error', text: err.message };
         } finally {
@@ -713,7 +705,7 @@
       });
     };
 
-    // --- SETUP SAVER UTILITY ---
+    // --- SETUP SAVER ---
     const saveFirebaseSetup = () => {
       const configStr = document.getElementById('setup-config').value;
       const customId = document.getElementById('setup-appid').value;
@@ -724,23 +716,37 @@
         localStorage.setItem('vb_2026_appid', customId);
         window.location.reload();
       } catch (e) {
-        alert("Hiba: Biztos vagy benne, hogy helyes JSON-t másoltál be?");
+        alert("Hibás konfigurációs formátum. Biztosan érvényes JSON szöveget másoltál be?");
       }
     };
 
-    // --- PROGRAMINDÍTÓ (ONLOAD) ---
+    // --- INITIALIZER ---
     window.onload = async () => {
       let config = null;
 
-      // 1. Megpróbáljuk beolvasni a beágyazott configot
-      if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+      // 1. Vercel Serverless API lekérdezése
+      try {
+        const apiRes = await fetch('/api/config');
+        if (apiRes.ok) {
+          const apiData = await apiRes.json();
+          if (apiData && apiData.firebaseConfig) {
+            config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
+            appId = apiData.appId || 'foci-vb-2026';
+          }
+        }
+      } catch (err) {
+        console.warn("Vercel API nem válaszolt, helyi tárolók ellenőrzése...");
+      }
+
+      // 2. Beágyazott Canvas változó
+      if (!config && typeof __firebase_config !== 'undefined' && __firebase_config) {
         try {
           config = JSON.parse(__firebase_config);
           appId = typeof __app_id !== 'undefined' ? __app_id : 'foci-vb-2026';
         } catch(e) {}
       }
 
-      // 2. Ha nincs, megnézzük a helyi tárolót (Vercel futás esetére)
+      // 3. Böngésző helyi tárolója (Localstorage)
       if (!config) {
         const localConfig = localStorage.getItem('vb_2026_firebase_config');
         const localAppId = localStorage.getItem('vb_2026_appid');
@@ -752,13 +758,13 @@
         }
       }
 
-      // Ha nincs meg a config, megállunk és megkérjük a felhasználót a kitöltésre
+      // Ha nincs konfiguráció, kirajzoljuk a varázslót
       if (!config) {
-        render(); // Varázsló képernyő kirajzolása
+        render();
         return;
       }
 
-      // 3. Firebase inicializálása
+      // Firebase példányosítás
       try {
         const app = initializeApp(config);
         auth = getAuth(app);
@@ -771,7 +777,7 @@
           await signInAnonymously(auth);
         }
 
-        // Valós idejű szinkronizáció elindítása
+        // Valós idejű Firestore adatfolyam
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
         onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -780,7 +786,6 @@
               state.markdownInput = state.liveState.rawMarkdown;
             }
           } else {
-            // Első üres állapot inicializálása
             state.liveState = {
               bracket: defaultBracketMatches,
               parsed: { ceremonies: [], matches: [] }
@@ -788,13 +793,13 @@
           }
           render();
         }, (err) => {
-          console.error("Firestore Error:", err);
+          console.error("Firestore hiba:", err);
         });
 
       } catch (err) {
         console.error("Csatlakozási hiba:", err);
         localStorage.removeItem('vb_2026_firebase_config');
-        alert("Nem sikerült csatlakozni a megadott Firebase projekthez. Ellenőrizd a konzol beállításaidat!");
+        alert("Nem sikerült kapcsolódni a megadott Firebase-hez. Ellenőrizd a beállításokat!");
         window.location.reload();
       }
     };
