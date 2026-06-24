@@ -70,14 +70,16 @@
       adminPasswordInput: '',
       markdownInput: '',
       
-      // Manuális csatlakozáshoz
+      // Diagnosztikai és manuális beállítások
       firebaseConfigRaw: '',
-      customAppId: 'foci-vb-2026'
+      customAppId: 'foci-vb-2026',
+      vercelApiError: null,
+      localSetupError: null
     };
 
     let auth = null, db = null, appId = 'foci-vb-2026';
 
-    // Alapértelmezett üres ágrajz
+    // Alapértelmezett üres ágrajz struktúra
     const defaultBracketMatches = {
       M73: { id: "M73", date: "jún 28.", venue: "Los Angeles", teamA: "A csoport 2. hely", teamB: "B csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamA" },
       M74: { id: "M74", date: "jún 28.", venue: "San Francisco", teamA: "Mexikó", teamB: "C/D/E/F 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamB" },
@@ -104,10 +106,10 @@
       M95: { id: "M95", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamA" },
       M96: { id: "M96", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamB" },
       M97: { id: "M97", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamA" },
-      M98: { id: "M98", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamB" },
-      M99: { id: "M99", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamA" },
-      M100: { id: "M100", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamB" },
-      M101: { id: "M101", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", nextMatch: "M104", slot: "teamA" },
+      M98: { id: "M98", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "M101", slot: "teamB" },
+      M99: { id: "M99", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "M102", slot: "teamA" },
+      M100: { id: "M100", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "M102", slot: "teamB" },
+      M101: { id: "M101", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "M104", slot: "teamA" },
       M102: { id: "M102", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "M104", slot: "teamB" },
       M104: { id: "M104", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "" },
       M103: { id: "M103", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "" }
@@ -168,7 +170,7 @@
       return data;
     };
 
-    // --- CARD DRAW UTIL FOR BRACKET ---
+    // --- CARD RENDER FOR BRACKET ---
     const renderBracketCard = (matchId) => {
       const b = state.liveState?.bracket || defaultBracketMatches;
       const m = b[matchId];
@@ -197,12 +199,12 @@
       `;
     };
 
-    // --- TEMPLATE DRAW AND EVENT BIND ---
+    // --- HTML RENDER ENGINE ---
     const render = () => {
       const container = document.getElementById('app');
       if (!container) return;
 
-      // CONFIG NINCS MEGADVA: MUTASSUK A BEÁLLÍTÁSI VARÁZSLÓT
+      // HA NINCS MEGADVA FIREBASE KONFIG: KIKÜLDJÜK A DIAGNOSZTIKAI VARÁZSLÓT
       if (!db) {
         container.innerHTML = `
           <div class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
@@ -212,19 +214,36 @@
                 <h2 class="text-xl font-black tracking-tight">Környezeti Beállítás Szükséges</h2>
               </div>
               
+              ${state.vercelApiError ? `
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5 animate-pulse">
+                  <p class="font-bold flex items-center gap-1.5">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    Vercel API Diagnosztikai Üzenet:
+                  </p>
+                  <p class="font-mono bg-slate-950/50 p-3 rounded border border-rose-500/10 text-[10px] whitespace-pre-wrap leading-relaxed">${state.vercelApiError}</p>
+                </div>
+              ` : ''}
+
+              ${state.localSetupError ? `
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-400 flex items-center gap-2">
+                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                  <span>${state.localSetupError}</span>
+                </div>
+              ` : ''}
+              
               <p class="text-sm text-slate-400 leading-relaxed">
-                Ha ezt az oldalt először indítod el és még nem állítottad be a **Vercel Környezeti Változókat** (Environment Variables), akkor itt manuálisan is megadhatod a Firebase konfigurációt a böngésződnek.
+                A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd a fenti diagnosztikai hibát, vagy adj meg egy manuális konfigurációt erre a böngészőre.
               </p>
 
               <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-500">
-                <p class="font-bold text-slate-400">Hol találod a Vercel beállítást?</p>
-                <p>A legkényelmesebb, ha a Vercel konzolodon beállítod a <strong class="text-slate-300">FIREBASE_CONFIG</strong> nevű környezeti változót a Firebase Console-ból másolt JSON kulcsokkal.</p>
+                <p class="font-bold text-slate-400">Hogyan rögzítsd a Vercel-en?</p>
+                <p>Győződj meg róla, hogy a Vercel -> Settings -> Environment Variables fülön megadtad a <strong class="text-slate-300">FIREBASE_CONFIG</strong> nevű kulcsot szabályos dupla idézőjeles JSON formátumban, majd futtattál egy **Redeploy**-t!</p>
               </div>
 
               <div class="space-y-4">
                 <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Firebase Config JSON</label>
-                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Manuális Firebase Config JSON</label>
+                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
                 </div>
                 <div>
                   <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
@@ -260,10 +279,10 @@
             </div>
 
             <div class="flex items-center space-x-1 sm:space-x-2">
-              <button id="btn-tab-bracket" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+              <button id="btn-tab-bracket" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
                 <span class="flex items-center space-x-1.5"><i data-lucide="git-merge" class="w-4 h-4"></i><span>Ágrajz</span></span>
               </button>
-              <button id="btn-tab-viewer" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
+              <button id="btn-tab-viewer" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
                 <span class="flex items-center space-x-1.5"><i data-lucide="tv" class="w-4 h-4"></i><span>Közvetítés</span></span>
               </button>
               <button id="btn-tab-admin" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'admin' ? 'bg-slate-800 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
@@ -380,7 +399,7 @@
                       ${renderBracketCard("M104")}
                     </div>
                     <div>
-                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Bronzmérkőzés</h3>
+                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
                       ${renderBracketCard("M103")}
                     </div>
                   </div>
@@ -391,7 +410,7 @@
         `;
       }
 
-      // --- TAB 2: ÉLŐ KÖZVETÍTÉSEK ---
+      // --- TAB 2: NÉZŐI KÖZVETÍTÉSEK ---
       if (state.activeTab === 'viewer') {
         html += `
           <div class="space-y-8">
@@ -450,7 +469,7 @@
               </div>
             `}
 
-            <!-- GONDOSAN RENDEZETT CSOPORTMECCSEK -->
+            <!-- OTHER MATCHES GRID -->
             <div class="space-y-4">
               <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -651,7 +670,7 @@
         });
       });
 
-      // Változások szinkronizálása a felhővel
+      // Változások szinkronizálása a felhővel (Rule 1 & Rule 3)
       document.getElementById('btn-save-all-cloud')?.addEventListener('click', async () => {
         state.isPublishing = true;
         state.statusMessage = { type: 'info', text: 'Feltöltés folyamatban...' };
@@ -705,7 +724,7 @@
       });
     };
 
-    // --- SETUP SAVER ---
+    // --- SETUP SAVER (No alert!) ---
     const saveFirebaseSetup = () => {
       const configStr = document.getElementById('setup-config').value;
       const customId = document.getElementById('setup-appid').value;
@@ -714,9 +733,11 @@
         const parsed = JSON.parse(configStr);
         localStorage.setItem('vb_2026_firebase_config', JSON.stringify(parsed));
         localStorage.setItem('vb_2026_appid', customId);
+        state.localSetupError = null;
         window.location.reload();
       } catch (e) {
-        alert("Hibás konfigurációs formátum. Biztosan érvényes JSON szöveget másoltál be?");
+        state.localSetupError = "Hibás konfigurációs formátum. Biztosan érvényes JSON szöveget másoltál be? (Minden kulcsot és szöveges értéket kötelező dupla idézőjelbe tenni!)";
+        render();
       }
     };
 
@@ -729,16 +750,26 @@
         const apiRes = await fetch('/api/config');
         if (apiRes.ok) {
           const apiData = await apiRes.json();
-          if (apiData && apiData.firebaseConfig) {
-            config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
-            appId = apiData.appId || 'foci-vb-2026';
+          if (apiData) {
+            if (apiData.error) {
+              console.warn("Vercel API konfigurációs hibaüzenet:", apiData.error);
+              state.vercelApiError = apiData.error;
+            }
+            if (apiData.firebaseConfig) {
+              config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
+              appId = apiData.appId || 'foci-vb-2026';
+            }
           }
+        } else {
+          console.warn(`Vercel API válasza nem volt sikeres: ${apiRes.status}`);
+          state.vercelApiError = `A Vercel API ${apiRes.status} belső hibát dobott a szerveren. Biztosan CommonJS formátumban élesítetted az api/config.js fájlt?`;
         }
       } catch (err) {
-        console.warn("Vercel API nem válaszolt, helyi tárolók ellenőrzése...");
+        console.warn("Vercel API nem érhető el vagy hálózati hiba történt:", err);
+        state.vercelApiError = `Hiba történt az API-val való kommunikáció során: ${err.message}`;
       }
 
-      // 2. Beágyazott Canvas változó
+      // 2. Beágyazott Canvas változó (ha létezik)
       if (!config && typeof __firebase_config !== 'undefined' && __firebase_config) {
         try {
           config = JSON.parse(__firebase_config);
@@ -746,7 +777,7 @@
         } catch(e) {}
       }
 
-      // 3. Böngésző helyi tárolója (Localstorage)
+      // 3. Böngésző helyi tárolója (localStorage)
       if (!config) {
         const localConfig = localStorage.getItem('vb_2026_firebase_config');
         const localAppId = localStorage.getItem('vb_2026_appid');
@@ -758,26 +789,26 @@
         }
       }
 
-      // Ha nincs konfiguráció, kirajzoljuk a varázslót
+      // Ha nincs konfiguráció, kirajzoljuk a diagnosztikai varázslót
       if (!config) {
         render();
         return;
       }
 
-      // Firebase példányosítás
+      // Firebase példányosítás és szinkronizáció (Rule 1, Rule 2, Rule 3)
       try {
         const app = initializeApp(config);
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // Anonymous Auth (Rule 3)
+        // Anonymous Auth FIRST (Rule 3)
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
         } else {
           await signInAnonymously(auth);
         }
 
-        // Valós idejű Firestore adatfolyam
+        // Valós idejű Firestore adatfolyam szigorú útvonallal (Rule 1)
         const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
         onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
@@ -799,8 +830,8 @@
       } catch (err) {
         console.error("Csatlakozási hiba:", err);
         localStorage.removeItem('vb_2026_firebase_config');
-        alert("Nem sikerült kapcsolódni a megadott Firebase-hez. Ellenőrizd a beállításokat!");
-        window.location.reload();
+        state.localSetupError = `Nem sikerült kapcsolódni a megadott Firebase-hez: ${err.message}. Ellenőrizd a beállításokat!`;
+        render();
       }
     };
   </script>
