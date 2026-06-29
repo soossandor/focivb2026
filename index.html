@@ -70,7 +70,8 @@
       adminPasswordInput: '',
       markdownInput: '',
       
-      // Diagnosztikai és manuális beállítások
+      // Kapcsolódási állapotjelzők
+      isConnected: false,
       firebaseConfigRaw: '',
       customAppId: 'foci-vb-2026',
       vercelApiError: null,
@@ -234,66 +235,6 @@
       const container = document.getElementById('app');
       if (!container) return;
 
-      // HA NINCS MEGADVA FIREBASE KONFIG: KIKÜLDJÜK A DIAGNOSZTIKAI VARÁZSLÓT
-      if (!db) {
-        container.innerHTML = `
-          <div class="min-h-screen flex items-center justify-center p-4 bg-slate-950">
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6">
-              <div class="flex items-center space-x-3 text-emerald-400">
-                <i data-lucide="shield-alert" class="w-8 h-8"></i>
-                <h2 class="text-xl font-black tracking-tight">Környezeti Beállítás Szükséges</h2>
-              </div>
-              
-              ${state.vercelApiError ? `
-                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5 animate-pulse">
-                  <p class="font-bold flex items-center gap-1.5">
-                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                    Vercel API Diagnosztikai Üzenet:
-                  </p>
-                  <p class="font-mono bg-slate-950/50 p-3 rounded border border-rose-500/10 text-[10px] whitespace-pre-wrap leading-relaxed">${state.vercelApiError}</p>
-                </div>
-              ` : ''}
-
-              ${state.localSetupError ? `
-                <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-400 flex items-center gap-2">
-                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                  <span>${state.localSetupError}</span>
-                </div>
-              ` : ''}
-              
-              <p class="text-sm text-slate-400 leading-relaxed">
-                A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd a fenti hibaüzenetet, vagy adj meg egy manuális konfigurációt.
-              </p>
-
-              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-500">
-                <p class="font-bold text-slate-400">Hogyan rögzítsd a Vercel-en?</p>
-                <p>Győződj meg róla, hogy a Vercel -> Settings -> Environment Variables fülön megadtad a <strong class="text-slate-300">FIREBASE_CONFIG</strong> nevű kulcsot szabályos dupla idézőjeles JSON formátumban, majd futtattál egy **Redeploy**-t!</p>
-              </div>
-
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Manuális Firebase Config JSON</label>
-                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
-                </div>
-                <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
-                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-850 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
-                </div>
-                <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
-                  <i data-lucide="check"></i>
-                  <span>Mentés és Csatlakozás</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-        lucide.createIcons();
-        document.getElementById('btn-save-config')?.addEventListener('click', saveFirebaseSetup);
-        return;
-      }
-
-      const activeLiveMatch = state.liveState?.parsed?.matches?.find(m => m.status.includes('ÉLŐ') || m.status.includes('FOLYAMATBAN'));
-
       let html = `
         <!-- HEADER -->
         <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
@@ -328,16 +269,22 @@
             <div class="flex items-center space-x-4">
               <div class="flex items-center space-x-2">
                 <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${state.isConnected ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 ${state.isConnected ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
                 </span>
-                <span class="font-semibold text-emerald-400">Élő adatbázis kapcsolat</span>
+                <span class="font-semibold ${state.isConnected ? 'text-emerald-400' : 'text-amber-400'}">
+                  ${state.isConnected ? 'Élő felhő kapcsolat aktív' : 'Helyi mód (Offline)'}
+                </span>
               </div>
             </div>
-            <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
-              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-              <span>Projekt leválasztása</span>
-            </button>
+            ${state.isConnected ? `
+              <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
+                <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+                <span>Kapcsolat bontása</span>
+              </button>
+            ` : `
+              <span class="text-[10px] text-slate-500">Háttérben szinkronizálunk...</span>
+            `}
           </div>
         </div>
 
@@ -499,7 +446,7 @@
               </div>
             `}
 
-            <!-- GONDOSAN RENDEZETT CSOPORTMECCSEK -->
+            <!-- CSOPORTMÉRKŐZÉSEK -->
             <div class="space-y-4">
               <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -528,6 +475,7 @@
 
       // --- TAB 3: ADMIN PANEL ---
       if (state.activeTab === 'admin') {
+        // Ha nem vagyunk belépve
         if (!state.isAdminAuthenticated) {
           html += `
             <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl space-y-4 max-w-md mx-auto">
@@ -545,7 +493,56 @@
               </form>
             </div>
           `;
-        } else {
+        } 
+        // Ha nincs Firebase DB kapcsolat (mert a változók még nincsenek beállítva), de megpróbáltunk belépni
+        else if (!db) {
+          html += `
+            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 mx-auto">
+              <div class="flex items-center space-x-3 text-emerald-400">
+                <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                <h2 class="text-xl font-black tracking-tight">Firebase Kapcsolat Szükséges</h2>
+              </div>
+              
+              ${state.vercelApiError ? `
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5">
+                  <p class="font-bold flex items-center gap-1.5">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    Vercel API Diagnosztikai Üzenet:
+                  </p>
+                  <p class="font-mono bg-slate-950/50 p-3 rounded border border-rose-500/10 text-[10px] whitespace-pre-wrap leading-relaxed">${state.vercelApiError}</p>
+                </div>
+              ` : ''}
+
+              ${state.localSetupError ? `
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-400 flex items-center gap-2">
+                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                  <span>${state.localSetupError}</span>
+                </div>
+              ` : ''}
+              
+              <p class="text-sm text-slate-400 leading-relaxed">
+                A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd az útmutatót vagy add meg manuálisan a konfigurációt ehhez a böngészőhöz.
+              </p>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Manuális Firebase Config JSON</label>
+                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-850 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+                </div>
+                <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
+                  <i data-lucide="check"></i>
+                  <span>Mentés és Csatlakozás</span>
+                </button>
+              </div>
+            </div>
+          `;
+        } 
+        // Ha van kapcsolat és be is vagyunk lépve
+        else {
           html += `
             <div class="max-w-4xl mx-auto space-y-8">
               <!-- Ágrajz mentés gomb -->
@@ -646,7 +643,7 @@
       document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
       document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
 
-      // Leválasztás esemény
+      // Leválasztás esemény (config törlése)
       document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
         localStorage.removeItem('vb_2026_firebase_config');
         window.location.reload();
@@ -665,6 +662,9 @@
         }
         render();
       });
+
+      // Kézi konfiguráció mentése a gombra kattintva
+      document.getElementById('btn-save-config')?.addEventListener('click', saveFirebaseSetup);
 
       // Ágrajz inputok figyelése és frissítése
       document.querySelectorAll('.bracket-input').forEach(input => {
@@ -773,26 +773,20 @@
       }
     };
 
-    // --- FAST TIMEOUT FETCH (Az örökös várakozás ellen!) ---
-    const fetchWithTimeout = async (resource, options = {}) => {
-      const { timeout = 2000 } = options;
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
-      const response = await fetch(resource, {
-        ...options,
-        signal: controller.signal
-      });
-      clearTimeout(id);
-      return response;
-    };
-
     // --- INITIALIZER ---
     window.onload = async () => {
+      // AZONNALI ELŐ-RENDERELÉS ALAPÉRTELMEZETT ADATOKKAL (0.1 mp betöltési idő!)
+      state.liveState = {
+        bracket: defaultBracketMatches,
+        parsed: { ceremonies: [], matches: [] }
+      };
+      render();
+
       let config = null;
 
-      // 1. Vercel Serverless API lekérdezése 2 másodperces szigorú időhatárral
+      // 1. Vercel Serverless API lekérdezése a háttérben (NINCS durva megszakítás, megvárjuk)
       try {
-        const apiRes = await fetchWithTimeout('/api/config', { timeout: 2000 });
+        const apiRes = await fetch('/api/config');
         if (apiRes.ok) {
           const apiData = await apiRes.json();
           if (apiData) {
@@ -807,24 +801,14 @@
           }
         } else {
           console.warn(`Vercel API válasza nem volt sikeres: ${apiRes.status}`);
-          state.vercelApiError = `A Vercel API ${apiRes.status} belső hibát dobott a szerveren. Biztosan CommonJS formátumban élesítetted az api/config.js fájlt?`;
+          state.vercelApiError = `A Vercel API ${apiRes.status} hibát dobott.`;
         }
       } catch (err) {
-        console.warn("Vercel API nem érhető el időben (helyi futtatás vagy nincs beállítva), ellenőrizzük a helyi tárolókat...");
-        if (!localStorage.getItem('vb_2026_firebase_config')) {
-          state.vercelApiError = `Nem sikerült elérni a Vercel szervert (${err.name === 'AbortError' ? 'Időtúllépés' : err.message}). Kérlek állítsd be a Vercel Environment Variables fülön a projektet, vagy használd az alábbi kézi konfigurációt.`;
-        }
+        console.warn("Vercel API hálózati hiba:", err);
+        state.vercelApiError = `Hiba történt az API-val való kommunikáció során: ${err.message}`;
       }
 
-      // 2. Beágyazott Canvas változó (ha létezik)
-      if (!config && typeof __firebase_config !== 'undefined' && __firebase_config) {
-        try {
-          config = JSON.parse(__firebase_config);
-          appId = typeof __app_id !== 'undefined' ? __app_id : 'foci-vb-2026';
-        } catch(e) {}
-      }
-
-      // 3. Böngésző helyi tárolója (localStorage)
+      // 2. Böngésző helyi tárolója (localStorage) mint fallback
       if (!config) {
         const localConfig = localStorage.getItem('vb_2026_firebase_config');
         const localAppId = localStorage.getItem('vb_2026_appid');
@@ -836,18 +820,10 @@
         }
       }
 
-      // Ha nincs konfiguráció, megállunk és megmutatjuk a beállító panelt
+      // Ha nincs konfiguráció egyáltalán, csendben helyi módban maradunk, az ágrajz már látható
       if (!config) {
-        render();
         return;
       }
-
-      // AZONNALI ELŐ-RENDERELÉS ALAPÉRTELMEZETT ADATOKKAL (0.1 mp betöltési idő!)
-      state.liveState = {
-        bracket: defaultBracketMatches,
-        parsed: { ceremonies: [], matches: [] }
-      };
-      render();
 
       // Firebase példányosítás és szinkronizáció indítása a háttérben
       try {
@@ -855,7 +831,7 @@
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // Névtelen bejelentkezés a háttérben
+        // Névtelen bejelentkezés
         const initAuthAndSync = async () => {
           try {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -864,20 +840,22 @@
               await signInAnonymously(auth);
             }
 
-            // Kapcsolódás a valós idejű zónához
+            // Kapcsolódás a valós idejű zónához (Rule 1)
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
             onSnapshot(docRef, (docSnap) => {
               if (docSnap.exists()) {
                 const cloudData = docSnap.data();
-                // Ha a felhőben már van mentett ágrajz vagy meccs, felülírjuk a helyit
                 state.liveState = cloudData;
                 if (state.liveState.rawMarkdown) {
                   state.markdownInput = state.liveState.rawMarkdown;
                 }
-                render(); // Újrarajzolás a friss felhő-adatokkal
               }
+              state.isConnected = true; // Sikeres kapcsolat!
+              render(); // Újrarajzolás a friss felhő-adatokkal
             }, (err) => {
               console.error("Firestore hiba:", err);
+              state.vercelApiError = "Adatbázis hiba: " + err.message;
+              render();
             });
           } catch (authErr) {
             console.error("Auth hiba a háttérben:", authErr);
@@ -888,8 +866,7 @@
 
       } catch (err) {
         console.error("Csatlakozási hiba:", err);
-        localStorage.removeItem('vb_2026_firebase_config');
-        state.localSetupError = `Nem sikerült kapcsolódni a megadott Firebase-hez: ${err.message}. Kérlek ellenőrizd a beállításokat!`;
+        state.localSetupError = `Nem sikerült kapcsolódni a megadott Firebase-hez: ${err.message}`;
         render();
       }
     };
