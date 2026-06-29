@@ -79,38 +79,49 @@
 
     let auth = null, db = null, appId = 'foci-vb-2026';
 
-    // Alapértelmezett üres ágrajz struktúra
+    // HIVATALOS ÉS VALÓS 2026-OS VILÁGBAJNOKI ÁGRAJZ (M73 - M104)
     const defaultBracketMatches = {
-      M73: { id: "M73", date: "jún 28.", venue: "Los Angeles", teamA: "A csoport 2. hely", teamB: "B csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamA" },
-      M74: { id: "M74", date: "jún 28.", venue: "San Francisco", teamA: "Mexikó", teamB: "C/D/E/F 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamB" },
-      M75: { id: "M75", date: "jún 29.", venue: "Monterrey", teamA: "C csoport 1. hely", teamB: "F csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamA" },
-      M76: { id: "M76", date: "jún 29.", venue: "Houston", teamA: "E csoport 2. hely", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamB" },
-      M77: { id: "M77", date: "jún 30.", venue: "Boston", teamA: "Franciaország", teamB: "C/D/G/H 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamA" },
-      M78: { id: "M78", date: "jún 30.", venue: "Philadelphia", teamA: "Argentína", teamB: "L csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamB" },
-      M79: { id: "M79", date: "júl 1.", venue: "Kansas City", teamA: "Kolumbia", teamB: "A/B/C/D/L 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamA" },
-      M80: { id: "M80", date: "júl 1.", venue: "Vancouver", teamA: "B csoport 1. hely", teamB: "E/F/G/I/J 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamB" },
-      M81: { id: "M81", date: "júl 2.", venue: "Seattle", teamA: "USA", teamB: "B/F/G/H/I 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamA" },
-      M82: { id: "M82", date: "júl 2.", venue: "New York/NJ", teamA: "G csoport 1. hely", teamB: "H csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamB" },
-      M83: { id: "M83", date: "júl 2.", venue: "Dallas", teamA: "Ausztria", teamB: "K csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamA" },
-      M84: { id: "M84", date: "júl 2.", venue: "Atlanta", teamA: "D csoport 2. hely", teamB: "Németország", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamB" },
-      M85: { id: "M85", date: "júl 3.", venue: "Miami", teamA: "H csoport 1. hely", teamB: "J/K/L/A/B 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamA" },
-      M86: { id: "M86", date: "jún 3.", venue: "San Francisco", teamA: "F csoport 1. hely", teamB: "G csoport 2. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamB" },
-      M87: { id: "M87", date: "júl 3.", venue: "Los Angeles", teamA: "L csoport 1. hely", teamB: "E/F/H/I/J 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamA" },
-      M88: { id: "M88", date: "júl 3.", venue: "Boston", teamA: "C csoport 2. hely", teamB: "D/K/L 3. hely", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamB" },
-      M89: { id: "M89", teamA: "Nyertes M73", teamB: "Nyertes M74", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamA" },
-      M90: { id: "M90", teamA: "Nyertes M75", teamB: "Nyertes M76", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamB" },
-      M91: { id: "M91", teamA: "Nyertes M77", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamA" },
+      // BAL ÁG (Left Bracket) - Legjobb 32
+      M73: { id: "M73", date: "jún 28.", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", nextMatch: "M89", slot: "teamA" },
+      M74: { id: "M74", date: "jún 29.", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamA" },
+      M75: { id: "M75", date: "jún 30.", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", nextMatch: "M89", slot: "teamB" },
+      M76: { id: "M76", date: "jún 29.", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamA" },
+      M77: { id: "M77", date: "jún 30.", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", nextMatch: "M90", slot: "teamB" },
+      M78: { id: "M78", date: "júl 3.", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", nextMatch: "M91", slot: "teamB" },
+      M79: { id: "M79", date: "jún 29.", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamA" },
+      M80: { id: "M80", date: "jún 30.", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", nextMatch: "M92", slot: "teamB" },
+
+      // JOBB ÁG (Right Bracket) - Legjobb 32
+      M81: { id: "M81", date: "júl 1.", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamA" },
+      M82: { id: "M82", date: "júl 1.", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", nextMatch: "M93", slot: "teamB" },
+      M83: { id: "M83", date: "júl 1.", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamA" },
+      M84: { id: "M84", date: "júl 2.", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamB" },
+      M85: { id: "M85", date: "júl 2.", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamA" },
+      M86: { id: "M86", date: "júl 2.", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamB" },
+      M87: { id: "M87", date: "júl 3.", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamA" },
+      M88: { id: "M88", date: "júl 3.", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamB" },
+
+      // NYOLCADDÖNTŐK (Round of 16)
+      M89: { id: "M89", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamA" },
+      M90: { id: "M90", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamB" },
+      M91: { id: "M91", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamA" },
       M92: { id: "M92", teamA: "Nyertes M79", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamB" },
       M93: { id: "M93", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamA" },
       M94: { id: "M94", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamB" },
       M95: { id: "M95", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamA" },
       M96: { id: "M96", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamB" },
+
+      // NEGYEDDÖNTŐK (Quarterfinals)
       M97: { id: "M97", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamA" },
-      M98: { id: "M98", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "M101", slot: "teamB" },
-      M99: { id: "M99", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "M102", slot: "teamA" },
-      M100: { id: "M100", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "M102", slot: "teamB" },
-      M101: { id: "M101", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "M104", slot: "teamA" },
+      M98: { id: "M98", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamB" },
+      M99: { id: "M99", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamA" },
+      M100: { id: "M100", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamB" },
+
+      // ELŐDÖNTŐK (Semifinals)
+      M101: { id: "M101", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", nextMatch: "M104", slot: "teamA" },
       M102: { id: "M102", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "M104", slot: "teamB" },
+
+      // DÖNTŐ ÉS HARMADIK HELYÉRT
       M104: { id: "M104", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "" },
       M103: { id: "M103", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "" }
     };
@@ -215,7 +226,7 @@
               </div>
               
               ${state.vercelApiError ? `
-                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5 animate-pulse">
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5">
                   <p class="font-bold flex items-center gap-1.5">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
                     Vercel API Diagnosztikai Üzenet:
@@ -232,7 +243,7 @@
               ` : ''}
               
               <p class="text-sm text-slate-400 leading-relaxed">
-                A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd a fenti diagnosztikai hibát, vagy adj meg egy manuális konfigurációt erre a böngészőre.
+                A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd a fenti hibaüzenetet, vagy adj meg egy manuális konfigurációt.
               </p>
 
               <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs text-slate-500">
@@ -247,7 +258,7 @@
                 </div>
                 <div>
                   <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
-                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-800 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
                 </div>
                 <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
                   <i data-lucide="check"></i>
@@ -469,7 +480,7 @@
               </div>
             `}
 
-            <!-- OTHER MATCHES GRID -->
+            <!-- GONDOSAN RENDEZETT CSOPORTMECCSEK -->
             <div class="space-y-4">
               <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -750,23 +761,13 @@
         const apiRes = await fetch('/api/config');
         if (apiRes.ok) {
           const apiData = await apiRes.json();
-          if (apiData) {
-            if (apiData.error) {
-              console.warn("Vercel API konfigurációs hibaüzenet:", apiData.error);
-              state.vercelApiError = apiData.error;
-            }
-            if (apiData.firebaseConfig) {
-              config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
-              appId = apiData.appId || 'foci-vb-2026';
-            }
+          if (apiData && apiData.firebaseConfig) {
+            config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
+            appId = apiData.appId || 'foci-vb-2026';
           }
-        } else {
-          console.warn(`Vercel API válasza nem volt sikeres: ${apiRes.status}`);
-          state.vercelApiError = `A Vercel API ${apiRes.status} belső hibát dobott a szerveren. Biztosan CommonJS formátumban élesítetted az api/config.js fájlt?`;
         }
       } catch (err) {
-        console.warn("Vercel API nem érhető el vagy hálózati hiba történt:", err);
-        state.vercelApiError = `Hiba történt az API-val való kommunikáció során: ${err.message}`;
+        console.warn("Vercel API nem válaszolt, helyi tárolók ellenőrzése...");
       }
 
       // 2. Beágyazott Canvas változó (ha létezik)
