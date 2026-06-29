@@ -143,7 +143,6 @@
 
     // --- ROBUSZTUS, IDŐZÓNA-FÜGGETLEN DÁTUM- ÉS IDŐKEZELŐ ---
     const parseDateTimeLocal = (str) => {
-      // Formátum: "YYYY-MM-DDTHH:mm"
       const parts = str.split('T');
       const dateParts = parts[0].split('-');
       const timeParts = parts[1].split(':');
@@ -169,7 +168,6 @@
     const getMatchTournamentDayKey = (dtStr) => {
       let { year, month, day, hour } = parseDateTimeLocal(dtStr);
       if (hour < 6) {
-        // Ha kora hajnalban van (00:00 - 05:59), akkor az előző napi közvetítéshez tartozik
         day -= 1;
         if (day === 0) {
           month -= 1;
@@ -181,7 +179,6 @@
     };
 
     const getFormattedGroupHeaderDate = (keyStr) => {
-      // keyStr: "YYYY-MM-DD"
       const [year, month, day] = keyStr.split('-').map(Number);
       const dateObj = new Date(year, month - 1, day);
       return dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
@@ -988,6 +985,10 @@
             onSnapshot(docRef, (docSnap) => {
               if (docSnap.exists()) {
                 state.liveState = docSnap.data();
+              } else {
+                state.liveState = {
+                  bracket: defaultBracketMatches
+                };
               }
               state.isConnected = true;
               render();
