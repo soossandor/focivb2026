@@ -954,7 +954,7 @@
 
       // Azonnali elő-renderelés
       state.liveState = {
-        bracket: defaultBracketMatches,
+        bracket: JSON.parse(JSON.stringify(defaultBracketMatches)),
         parsed: { ceremonies: [], matches: [] }
       };
       render();
@@ -1010,10 +1010,22 @@
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
             onSnapshot(docRef, (docSnap) => {
               if (docSnap.exists()) {
-                state.liveState = docSnap.data();
+                const data = docSnap.data();
+                if (data && data.bracket) {
+                  // Biztonságos merge: a statikus menetrendi adatokat mindig a helyi defaultBracketMatches-ből kényszerítjük ki
+                  for (const key in data.bracket) {
+                    if (defaultBracketMatches[key]) {
+                      data.bracket[key].date = defaultBracketMatches[key].date;
+                      data.bracket[key].time = defaultBracketMatches[key].time;
+                      data.bracket[key].datetime = defaultBracketMatches[key].datetime;
+                      data.bracket[key].venue = defaultBracketMatches[key].venue;
+                    }
+                  }
+                }
+                state.liveState = data;
               } else {
                 state.liveState = {
-                  bracket: defaultBracketMatches
+                  bracket: JSON.parse(JSON.stringify(defaultBracketMatches))
                 };
               }
               state.isConnected = true;
