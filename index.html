@@ -115,10 +115,10 @@
       M97: { id: "M97", date: "júl 9.", time: "22:00", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamA" },
       M98: { id: "M98", date: "júl 10.", time: "02:00 (júl. 11.)", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", nextMatch: "M101", slot: "teamB" },
       M99: { id: "M99", date: "júl 10.", time: "22:00", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamA" },
-      M100: { id: "M100", date: "júl 11.", time: "02:00 (júl. 12.)", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", nextMatch: "M102", slot: "teamB" },
+      M100: { id: "M100", date: "júl 11.", time: "02:00 (júl. 12.)", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "M102", slot: "teamB" },
 
       // ELŐDÖNTŐK (Semifinals)
-      M101: { id: "M101", date: "júl 14.", time: "22:00", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", nextMatch: "M104", slot: "teamA" },
+      M101: { id: "M101", date: "júl 14.", time: "22:00", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "M104", slot: "teamA" },
       M102: { id: "M102", date: "júl 15.", time: "22:00", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "M104", slot: "teamB" },
 
       // DÖNTŐ ÉS HARMADIK HELYÉRT
@@ -130,6 +130,13 @@
       const time = new Date().toLocaleTimeString('hu-HU');
       state.apiLogs = [{ time, message, type }, ...state.apiLogs].slice(0, 15);
       render();
+    };
+
+    // --- HELYŐRZŐ SZŰRŐ (VALÓS CSAPAT VS NYERTES MXX) ---
+    const isPlaceholder = (name) => {
+      if (!name) return true;
+      const lower = name.toLowerCase();
+      return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett');
     };
 
     // --- PARSER: MARKDOWN TO JSON ---
@@ -190,6 +197,9 @@
       const isASelected = m.winner && m.winner === m.teamA;
       const isBSelected = m.winner && m.winner === m.teamB;
 
+      const isAPlaceholder = isPlaceholder(m.teamA);
+      const isBPlaceholder = isPlaceholder(m.teamB);
+
       return `
         <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md hover:border-emerald-500/30 transition-all">
           <div class="flex items-center justify-between text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-800/50 pb-1">
@@ -200,12 +210,18 @@
             <span class="text-slate-400 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
           </div>
           <div class="space-y-1.5">
+            <!-- TEAM A -->
             <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
-              <span class="text-xs font-bold truncate max-w-[130px] ${isASelected ? 'text-emerald-400' : 'text-slate-300'}">${m.teamA}</span>
+              <span class="text-xs truncate max-w-[130px] ${
+                isASelected ? 'text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-500 italic font-medium' : 'text-slate-100 font-bold'
+              }">${m.teamA}</span>
               <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
             </div>
+            <!-- TEAM B -->
             <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isBSelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
-              <span class="text-xs font-bold truncate max-w-[130px] ${isBSelected ? 'text-emerald-400' : 'text-slate-300'}">${m.teamB}</span>
+              <span class="text-xs truncate max-w-[130px] ${
+                isBSelected ? 'text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-500 italic font-medium' : 'text-slate-100 font-bold'
+              }">${m.teamB}</span>
               <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
             </div>
           </div>
@@ -413,7 +429,7 @@
                       ${renderBracketCard("M104")}
                     </div>
                     <div>
-                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Bronzmérkőzés</h3>
+                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
                       ${renderBracketCard("M103")}
                     </div>
                   </div>
@@ -559,7 +575,9 @@
                     return `
                       <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
                         <div class="flex items-center justify-between text-xs font-bold text-slate-400">
-                          <span class="text-emerald-400 font-black font-mono bg-emerald-500/10 px-2 py-0.5 rounded">${m.id} ${m.time ? '• ' + m.time : ''}</span>
+                          <span class="text-emerald-400 font-black font-mono bg-emerald-500/10 px-2 py-0.5 rounded">
+                            ${m.id} • ${m.date || 'Dátum'} ${m.time ? '• ' + m.time : ''}
+                          </span>
                           <span>${m.venue || ''}</span>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -755,22 +773,48 @@
       }
     };
 
+    // --- FAST TIMEOUT FETCH (Az örökös várakozás ellen!) ---
+    const fetchWithTimeout = async (resource, options = {}) => {
+      const { timeout = 2000 } = options;
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal
+      });
+      clearTimeout(id);
+      return response;
+    };
+
     // --- INITIALIZER ---
     window.onload = async () => {
       let config = null;
 
-      // 1. Vercel Serverless API lekérdezése
+      // 1. Vercel Serverless API lekérdezése 2 másodperces szigorú időhatárral
       try {
-        const apiRes = await fetch('/api/config');
+        const apiRes = await fetchWithTimeout('/api/config', { timeout: 2000 });
         if (apiRes.ok) {
           const apiData = await apiRes.json();
-          if (apiData && apiData.firebaseConfig) {
-            config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
-            appId = apiData.appId || 'foci-vb-2026';
+          if (apiData) {
+            if (apiData.error) {
+              console.warn("Vercel API konfigurációs hibaüzenet:", apiData.error);
+              state.vercelApiError = apiData.error;
+            }
+            if (apiData.firebaseConfig) {
+              config = typeof apiData.firebaseConfig === 'string' ? JSON.parse(apiData.firebaseConfig) : apiData.firebaseConfig;
+              appId = apiData.appId || 'foci-vb-2026';
+            }
           }
+        } else {
+          console.warn(`Vercel API válasza nem volt sikeres: ${apiRes.status}`);
+          state.vercelApiError = `A Vercel API ${apiRes.status} belső hibát dobott a szerveren. Biztosan CommonJS formátumban élesítetted az api/config.js fájlt?`;
         }
       } catch (err) {
-        console.warn("Vercel API nem válaszolt, helyi tárolók ellenőrzése...");
+        console.warn("Vercel API nem érhető el időben (helyi futtatás vagy nincs beállítva), ellenőrizzük a helyi tárolókat...");
+        // Nem állítunk be látványos piros hibát, ha van mentett localStorage, mert azzal is tökéletesen elindul
+        if (!localStorage.getItem('vb_2026_firebase_config')) {
+          state.vercelApiError = `Nem sikerült elérni a Vercel szervert (${err.name === 'AbortError' ? 'Időtúllépés' : err.message}). Kérlek állítsd be a Vercel Environment Variables fülön a projektet, vagy használd az alábbi kézi konfigurációt.`;
+        }
       }
 
       // 2. Beágyazott Canvas változó (ha létezik)
