@@ -127,29 +127,71 @@
       M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "" }
     };
 
-    // --- HELYŐRZŐ SZŰRŐ (VALÓS CSAPAT VS NYERTES MXX) ---
-    const isPlaceholder = (name) => {
-      if (!name) return true;
-      const lower = name.toLowerCase();
-      return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett') || lower.includes('hely');
+    // --- IDŐTÚLLÉPÉS KEZELŐ A BLOKKOLT KÉRÉSEKHEZ ---
+    const runWithTimeout = (promise, ms = 4000) => {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error("Időtúllépés hálózati blokkolás miatt"));
+        }, ms);
+        
+        promise.then(
+          (res) => { clearTimeout(timer); resolve(res); },
+          (err) => { clearTimeout(timer); reject(err); }
+        );
+      });
+    };
+
+    // --- ROBUSZTUS, IDŐZÓNA-FÜGGETLEN DÁTUM- ÉS IDŐKEZELŐ ---
+    const parseDateTimeLocal = (str) => {
+      // Formátum: "YYYY-MM-DDTHH:mm"
+      const parts = str.split('T');
+      const dateParts = parts[0].split('-');
+      const timeParts = parts[1].split(':');
+      return {
+        year: parseInt(dateParts[0]),
+        month: parseInt(dateParts[1]),
+        day: parseInt(dateParts[2]),
+        hour: parseInt(timeParts[0]),
+        minute: parseInt(timeParts[1])
+      };
+    };
+
+    const getDateTimeMinutes = (dtStr) => {
+      const { year, month, day, hour, minute } = parseDateTimeLocal(dtStr);
+      const daysInMonths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      let totalDays = day;
+      for (let i = 1; i < month; i++) {
+        totalDays += daysInMonths[i];
+      }
+      return totalDays * 24 * 60 + hour * 60 + minute;
+    };
+
+    const getMatchTournamentDayKey = (dtStr) => {
+      let { year, month, day, hour } = parseDateTimeLocal(dtStr);
+      if (hour < 6) {
+        // Ha kora hajnalban van (00:00 - 05:59), akkor az előző napi közvetítéshez tartozik
+        day -= 1;
+        if (day === 0) {
+          month -= 1;
+          const daysInMonths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+          day = daysInMonths[month];
+        }
+      }
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    };
+
+    const getFormattedGroupHeaderDate = (keyStr) => {
+      // keyStr: "YYYY-MM-DD"
+      const [year, month, day] = keyStr.split('-').map(Number);
+      const dateObj = new Date(year, month - 1, day);
+      return dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
     };
 
     // --- KRONOLÓGIAI IDŐBÉLYEG ELŐKÉSZÍTÉSE ---
     const getMatchDateTimeString = (m) => {
       if (m.datetime) return m.datetime;
       const defMatch = defaultBracketMatches[m.id];
-      return defMatch ? defMatch.datetime : "2026-11-31T00:00";
-    };
-
-    // --- TORNA JÁTÉKNAP SZÁMÍTÓ (HAJNALI ELTOLÓDÁS KEZELÉSE) ---
-    // Ha a meccs magyar idő szerint hajnali 0:00 és 5:59 között kezdődik,
-    // az előző napi logikai blokkhoz csoportosítjuk.
-    const getTournamentDay = (dateObj) => {
-      const cloned = new Date(dateObj.getTime());
-      if (cloned.getHours() < 6) {
-        cloned.setDate(cloned.getDate() - 1);
-      }
-      return cloned;
+      return defMatch ? defMatch.datetime : "2026-11-31T00:00"; // Fallback
     };
 
     // --- CARD RENDER FOR BRACKET ---
@@ -175,7 +217,16 @@
               <span>${m.id} • ${m.date || 'Dátum'}</span>
               ${m.time ? `<span class="text-emerald-600 dark:text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1 py-0.5 rounded text-[8px]">${m.time}</span>` : ''}
             </span>
-            <span class="text-slate-400 dark:text-slate-500 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
+            ${m.isLive ? `
+              <span class="flex items-center gap-1 text-rose-500 font-black tracking-widest animate-pulse text-[8px]">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                <span>ÉLŐ</span>
+              </span>
+            ` : m.winner ? `
+              <span class="text-emerald-600 dark:text-emerald-400 text-[8px] font-black tracking-wide">VÉGE</span>
+            ` : `
+              <span class="text-slate-400 dark:text-slate-500 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
+            `}
           </div>
           <div class="space-y-1.5">
             <!-- TEAM A -->
@@ -371,29 +422,28 @@
       if (state.activeTab === 'schedule') {
         const b = state.liveState?.bracket || defaultBracketMatches;
         
-        // Kiszűrjük azokat a meccseket, amiknek mindkét résztvevője ismert valós ország
+        // Csoportosítjuk és rendezzük a meccseket, amiknek mindkét résztvevője ismert
         const upcomingMatches = Object.values(b).filter(m => {
           return m.teamA && m.teamB && !isPlaceholder(m.teamA) && !isPlaceholder(m.teamB);
         });
 
-        // Sorbarendezés a belső datetime ISO időbélyeg alapján (golyóálló módon)
+        // 1. Meccsek sorbarendezése a belső percek alapján (időzóna-független!)
         upcomingMatches.sort((a, b) => {
           const dtA = getMatchDateTimeString(a);
           const dtB = getMatchDateTimeString(b);
-          return new Date(dtA) - new Date(dtB);
+          return getDateTimeMinutes(dtA) - getDateTimeMinutes(dtB);
         });
 
-        // Csoportosítás a Torna Játéknapjai szerint (kora hajnali eltolás)
+        // 2. Csoportosítás a Torna Játéknapjai szerint (hajnali meccsek eltolásával)
         const groups = {};
         upcomingMatches.forEach(m => {
           const dtStr = getMatchDateTimeString(m);
-          const realDate = new Date(dtStr);
-          const tDay = getTournamentDay(realDate);
+          const key = getMatchTournamentDayKey(dtStr);
+          const realDate = parseDateTimeLocal(dtStr);
           
-          const key = `${tDay.getFullYear()}-${String(tDay.getMonth() + 1).padStart(2, '0')}-${String(tDay.getDate()).padStart(2, '0')}`;
           if (!groups[key]) {
             groups[key] = {
-              dateObj: tDay,
+              keyStr: key,
               matches: []
             };
           }
@@ -428,11 +478,11 @@
               </div>
             ` : sortedKeys.map(key => {
               const group = groups[key];
-              const formattedHeaderDate = group.dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
+              const formattedHeaderDate = getFormattedGroupHeaderDate(group.keyStr);
               
               return `
                 <div class="space-y-4 bg-white dark:bg-slate-900/10 border border-slate-200 dark:border-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm">
-                  <!-- Napi Csoport Fejléc -->
+                  <!-- Fejléc -->
                   <div class="sticky top-16 z-10 bg-white/95 dark:bg-slate-950/90 backdrop-blur py-2.5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between transition-colors">
                     <h3 class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-wide flex items-center gap-2 capitalize">
                       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -447,7 +497,7 @@
                   <div class="relative border-l-2 border-emerald-500/20 ml-4 pl-6 space-y-5 pt-2">
                     ${group.matches.map(({ m, realDate }) => {
                       const formattedTime = m.time.split(' ')[0];
-                      const isDawn = realDate.getHours() < 6;
+                      const isDawn = realDate.hour < 6;
                       const isAWinner = m.winner && m.winner === m.teamA;
                       const isBWinner = m.winner && m.winner === m.teamB;
                       
@@ -464,7 +514,7 @@
                             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 text-xs font-bold text-slate-500 dark:text-slate-400">
                               <span class="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg uppercase tracking-wider font-mono">${m.id}</span>
                               <span class="flex items-center gap-1.5 bg-white dark:bg-slate-950 px-3 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 ${m.isLive ? 'text-rose-500' : 'text-emerald-550'}"></i>
+                                <i data-lucide="clock" class="w-3.5 h-3.5 ${m.isLive ? 'text-rose-500 animate-pulse' : 'text-emerald-555'}"></i>
                                 <span>${formattedTime} CEST ${isDawn ? '<span class="text-amber-500 dark:text-amber-400 font-normal text-[10px] ml-1">(másnap hajnalban)</span>' : ''}</span>
                               </span>
                               ${m.isLive ? `
@@ -482,7 +532,7 @@
                                 <div class="w-10 h-10 bg-slate-100 dark:bg-slate-950 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
                               </div>
 
-                              <!-- Eredmény kijelzés -->
+                              <!-- Eredmény vs VS -->
                               ${m.scoreA !== "" && m.scoreB !== "" ? `
                                 <div class="flex flex-col items-center">
                                   <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl text-center min-w-[70px] font-black text-base text-slate-800 dark:text-white shadow-inner">
@@ -587,8 +637,8 @@
         else {
           html += `
             <div class="max-w-4xl mx-auto space-y-8 animate-fadeIn">
-              <!-- Ágrajz mentés gomb -->
-              <div class="bg-white dark:bg-slate-900 border border-slate-850 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+              <!-- Mentés gomb -->
+              <div class="bg-white dark:bg-slate-900 border border-slate-250 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
                 <div>
                   <h3 class="font-black text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
                     <i data-lucide="radio" class="text-blue-500 animate-pulse"></i>
@@ -596,13 +646,13 @@
                   </h3>
                   <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Módosítsd az ágrajz eredményeit, majd szinkronizáld őket a felhővel.</p>
                 </div>
-                <button id="btn-save-all-cloud" ${state.isPublishing ? 'disabled' : ''} class="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-100 dark:disabled:bg-slate-800 text-slate-950 font-black py-3 px-6 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2">
+                <button id="btn-save-all-cloud" ${state.isPublishing ? 'disabled' : ''} class="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-100 dark:disabled:bg-slate-800 text-slate-950 font-black py-3 px-6 rounded-xl text-sm shadow-lg transition-all flex items-center justify-center gap-2">
                   ${state.isPublishing ? '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>' : '<i data-lucide="upload" class="w-4 h-4"></i>'}
                   <span>Változtatások Élesítése a Weben</span>
                 </button>
               </div>
 
-              <!-- ÁGRAJZ MECCSEK SZERKESZTŐJE -->
+              <!-- ÁGRAJZ MECCSEK KEZELŐ PANEL -->
               <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-3xl space-y-6 shadow-sm">
                 <h4 class="text-xs text-slate-500 dark:text-slate-400 font-black tracking-widest uppercase border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
                   <i data-lucide="git-merge" class="text-emerald-500 dark:text-emerald-400"></i>
@@ -646,7 +696,7 @@
                           </div>
                         </div>
 
-                        <!-- Tizenegyes párbaj mezők (csak döntetlennél) -->
+                        <!-- Büntetők -->
                         ${isDraw ? `
                           <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-150 dark:border-slate-800/80 animate-fadeIn">
                             <div>
@@ -660,7 +710,7 @@
                           </div>
                         ` : ''}
 
-                        <!-- Élő Státusz gomb -->
+                        <!-- Élő gomb -->
                         <div class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
                           <button data-match="${m.id}" class="btn-toggle-live w-full py-1.5 rounded text-[10px] font-bold transition-all flex items-center justify-center gap-1 ${
                             m.isLive 
@@ -712,10 +762,10 @@
       document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
       document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
 
-      // Téma váltó gomb bekötése
+      // Téma váltás
       document.getElementById('btn-toggle-theme')?.addEventListener('click', toggleTheme);
 
-      // Leválasztás esemény
+      // Leválasztás
       document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
         localStorage.removeItem('vb_2026_firebase_config');
         window.location.reload();
@@ -735,7 +785,7 @@
         render();
       });
 
-      // Ágrajz inputok figyelése és frissítése
+      // Ágrajz inputok figyelése
       document.querySelectorAll('.bracket-input').forEach(input => {
         input.addEventListener('input', (e) => {
           const matchId = e.target.dataset.match;
@@ -749,7 +799,7 @@
         });
       });
 
-      // Büntető inputok figyelése és frissítése
+      // Büntető inputok figyelése
       document.querySelectorAll('.bracket-pen-input').forEach(input => {
         input.addEventListener('input', (e) => {
           const matchId = e.target.dataset.match;
@@ -791,7 +841,7 @@
 
           const b = state.liveState.bracket;
           b[matchId].winner = winner;
-          b[matchId].isLive = false; // Ha eldőlt, befejeződik az élő fázis
+          b[matchId].isLive = false;
 
           const nextMatchId = b[matchId].nextMatch;
           const slot = b[matchId].slot;
@@ -803,7 +853,7 @@
         });
       });
 
-      // Változások szinkronizálása a felhővel (Rule 1 & Rule 3)
+      // Változások szinkronizálása a felhővel (Rule 1 & Rule 3 + Időkorlát és részletes hibajelzés)
       document.getElementById('btn-save-all-cloud')?.addEventListener('click', async () => {
         state.isPublishing = true;
         state.statusMessage = { type: 'info', text: 'Feltöltés folyamatban...' };
@@ -811,13 +861,25 @@
 
         try {
           const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-          await setDoc(docRef, {
+          const savePromise = setDoc(docRef, {
             bracket: state.liveState?.bracket || defaultBracketMatches,
             updatedAt: new Date().toISOString()
           });
+          
+          await runWithTimeout(savePromise, 5000);
           state.statusMessage = { type: 'success', text: 'Az Ágrajz és minden módosítás sikeresen szinkronizálva lett az adatbázissal!' };
         } catch(err) {
-          state.statusMessage = { type: 'error', text: 'Hiba a mentés során: ' + err.message };
+          console.error("Mentési hiba részletei:", err);
+          let errMsg = err.message;
+          
+          // Ha jogosultsági hiba történik (Lejárt szabályok miatt)
+          if (err.code === 'permission-denied' || err.message.toLowerCase().includes('permission') || err.message.toLowerCase().includes('insufficient')) {
+            errMsg = "Hozzáférés megtagadva! A Firebase biztonsági szabályai (Rules) lejártak, vagy a Névtelen Bejelentkezés nincs engedélyezve. Kérlek, állítsd be a szabályokat a Firebase Console-ban az útmutatónk alapján!";
+          } else if (err.message.includes("Időtúllépés")) {
+            errMsg = "Időtúllépés! A Google szerverek nem válaszoltak időben. Ha Brave böngészőt használsz, győződj meg róla, hogy teljesen kikapcsoltad a narancssárga oroszlán ikonos 'Brave Shields' pajzsot!";
+          }
+          
+          state.statusMessage = { type: 'error', text: errMsg };
         } finally {
           state.isPublishing = false;
           render();
@@ -843,7 +905,7 @@
       }
     };
 
-    // --- SETUP SAVER (No alert!) ---
+    // --- SETUP SAVER ---
     const saveFirebaseSetup = () => {
       const configStr = document.getElementById('setup-config').value;
       const customId = document.getElementById('setup-appid').value;
@@ -855,7 +917,7 @@
         state.localSetupError = null;
         window.location.reload();
       } catch (e) {
-        state.localSetupError = "Hibás konfigurációs formátum. Biztosan érvényes JSON szöveget másoltál be? (Minden kulcsot és szöveges értéket kötelező dupla idézőjelbe tenni!)";
+        state.localSetupError = "Hibás konfigurációs formátum. Biztosan érvényes JSON szöveget másoltál be?";
         render();
       }
     };
@@ -890,7 +952,7 @@
         console.warn("Vercel API hiba, helyi beállítások ellenőrzése...");
       }
 
-      // 2. Böngésző helyi tárolója (localStorage)
+      // 2. Erős fallback a helyi tárolóból (localStorage)
       if (!config) {
         const localConfig = localStorage.getItem('vb_2026_firebase_config');
         const localAppId = localStorage.getItem('vb_2026_appid');
@@ -912,24 +974,32 @@
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // Auth
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
+        // Névtelen bejelentkezés végrehajtása
+        const initAuthAndSync = async () => {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
+            }
 
-        // Real-time listener (Rule 1)
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-        onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            state.liveState = docSnap.data();
+            // Kapcsolódás a valós idejű zónához (Rule 1)
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
+            onSnapshot(docRef, (docSnap) => {
+              if (docSnap.exists()) {
+                state.liveState = docSnap.data();
+              }
+              state.isConnected = true;
+              render();
+            }, (err) => {
+              console.error("Firestore hiba:", err);
+            });
+          } catch (authErr) {
+            console.error("Auth hiba a háttérben:", authErr);
           }
-          state.isConnected = true;
-          render();
-        }, (err) => {
-          console.error("Firestore hiba:", err);
-        });
+        };
+
+        initAuthAndSync();
 
       } catch (err) {
         console.error("Csatlakozási hiba:", err);
