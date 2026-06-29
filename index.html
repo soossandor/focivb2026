@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hu" class="dark">
+<html lang="hu" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -31,21 +31,27 @@
       width: 4px;
     }
     .scrollbar-thin::-webkit-scrollbar-track {
-      background: #090d16;
+      background: rgba(0, 0, 0, 0.05);
     }
     .scrollbar-thin::-webkit-scrollbar-thumb {
-      background: #1e293b;
+      background: rgba(0, 0, 0, 0.2);
       border-radius: 2px;
+    }
+    .dark .scrollbar-thin::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: #1e293b;
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-slate-950">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-slate-950 transition-colors duration-200">
 
   <div id="app">
-    <!-- Dinamikus betöltő képernyő (csak az első inicializáláskor látszik tizedmásodpercekig) -->
+    <!-- Dinamikus betöltő képernyő -->
     <div class="min-h-screen flex flex-col items-center justify-center">
       <div class="animate-spin text-emerald-500 w-12 h-12 border-4 border-current border-t-transparent rounded-full mb-4"></div>
-      <p class="text-slate-400 font-medium">Rendszer inicializálása...</p>
+      <p class="text-slate-500 dark:text-slate-400 font-medium animate-pulse">Rendszer inicializálása...</p>
     </div>
   </div>
 
@@ -59,6 +65,7 @@
     const state = {
       activeTab: 'bracket', // 'bracket' | 'schedule' | 'viewer' | 'admin'
       bracketTab: 'left', // 'left' | 'right' | 'finals'
+      theme: 'light', // 'light' | 'dark'
       isAdminAuthenticated: false,
       isApiActive: false,
       useMockApi: true,
@@ -73,8 +80,7 @@
       adminPasswordInput: '',
       markdownInput: '',
       
-      // Kapcsolódási állapotjelzők
-      isConnected: false,
+      // Diagnosztikai és manuális beállítások
       firebaseConfigRaw: '',
       customAppId: 'foci-vb-2026',
       vercelApiError: null,
@@ -83,7 +89,7 @@
 
     let auth = null, db = null, appId = 'foci-vb-2026';
 
-    // HIVATALOS ÉS VALÓS 2026-OS VILÁGBAJNOKI ÁGRAJZ MAGYAR IDŐVEL (CEST) ÉS BELSŐ DÁTUM ADATTAL
+    // HIVATALOS ÉS VALÓS 2026-OS VILÁGBAJNOKI ÁGRAJZ MAGYAR IDŐVEL (CEST) ÉS BELSŐ ISO DÁTUM ADATTAL
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
       M73: { id: "M73", date: "jún 28.", time: "03:00", datetime: "2026-06-28T03:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", nextMatch: "M89", slot: "teamA" },
@@ -101,15 +107,15 @@
       M83: { id: "M83", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamA" },
       M84: { id: "M84", date: "júl 2.", time: "03:00 (júl. 3.)", datetime: "2026-07-03T03:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", nextMatch: "M94", slot: "teamB" },
       M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamA" },
-      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamB" },
-      M87: { id: "M87", date: "júl 3.", time: "02:00 (júl. 4.)", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamA" },
+      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", nextMatch: "M95", slot: "teamB" },
+      M87: { id: "M87", date: "júl 3.", time: "02:00 (júl. 4.)", datetime: "2026-07-04T02:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamA" },
       M88: { id: "M88", date: "júl 3.", time: "19:00", datetime: "2026-07-03T19:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", nextMatch: "M96", slot: "teamB" },
 
       // NYOLCADDÖNTŐK (Round of 16)
       M89: { id: "M89", date: "júl 4.", time: "22:00", datetime: "2026-07-04T22:00", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamA" },
       M90: { id: "M90", date: "júl 4.", time: "02:00 (júl. 5.)", datetime: "2026-07-05T02:00", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", nextMatch: "M97", slot: "teamB" },
       M91: { id: "M91", date: "júl 5.", time: "22:00", datetime: "2026-07-05T22:00", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamA" },
-      M92: { id: "M92", date: "júl 5.", time: "02:00 (júl. 6.)", datetime: "2026-07-06T02:00", teamA: "Nyertes m79", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamB" },
+      M92: { id: "M92", date: "júl 5.", time: "02:00 (júl. 6.)", datetime: "2026-07-06T02:00", teamA: "Nyertes M79", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", nextMatch: "M98", slot: "teamB" },
       M93: { id: "M93", date: "júl 6.", time: "22:00", datetime: "2026-07-06T22:00", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamA" },
       M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", nextMatch: "M99", slot: "teamB" },
       M95: { id: "M95", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", nextMatch: "M100", slot: "teamA" },
@@ -130,12 +136,6 @@
       M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "" }
     };
 
-    const addLog = (message, type = 'info') => {
-      const time = new Date().toLocaleTimeString('hu-HU');
-      state.apiLogs = [{ time, message, type }, ...state.apiLogs].slice(0, 15);
-      render();
-    };
-
     // --- HELYŐRZŐ SZŰRŐ (VALÓS CSAPAT VS NYERTES MXX) ---
     const isPlaceholder = (name) => {
       if (!name) return true;
@@ -143,12 +143,12 @@
       return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett') || lower.includes('hely');
     };
 
-    // --- KRONOLÓGIAI IDŐBÉLYEG VISSZAADÁSA (SÉMA ADATBÁZIS COMPATIBILITY) ---
+    // --- KRONOLÓGIAI IDŐBÉLYEG VISSZAADÁSA ---
     const getMatchDateTimeString = (m) => {
       if (m.datetime) return m.datetime;
       const defMatch = defaultBracketMatches[m.id];
       if (defMatch && defMatch.datetime) return defMatch.datetime;
-      return "2026-11-31T00:00"; // Fallback érték
+      return "2026-11-31T00:00"; // Fallback
     };
 
     // --- TORNA JÁTÉKNAP SZÁMÍTÓ (HAJNALI ELTOLÓDÁS KEZELÉSE) ---
@@ -224,28 +224,28 @@
       const isBPlaceholder = isPlaceholder(m.teamB);
 
       return `
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md hover:border-emerald-500/30 transition-all">
-          <div class="flex items-center justify-between text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-800/50 pb-1">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm dark:shadow-md hover:border-emerald-500/40 dark:hover:border-emerald-500/30 transition-all duration-200">
+          <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-100 dark:border-slate-800/50 pb-1">
             <span class="flex items-center gap-1.5">
               <span>${m.id} • ${m.date || 'Dátum'}</span>
-              ${m.time ? `<span class="text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1 py-0.5 rounded text-[8px]">${m.time}</span>` : ''}
+              ${m.time ? `<span class="text-emerald-600 dark:text-emerald-400 font-mono font-bold bg-emerald-500/10 px-1 py-0.5 rounded text-[8px]">${m.time}</span>` : ''}
             </span>
-            <span class="text-slate-400 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
+            <span class="text-slate-400 dark:text-slate-500 font-mono text-[8px]">${m.venue || 'Helyszín'}</span>
           </div>
           <div class="space-y-1.5">
             <!-- TEAM A -->
-            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
+            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-950/40'}">
               <span class="text-xs truncate max-w-[130px] ${
-                isASelected ? 'text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-500 italic font-medium animate-pulse' : 'text-slate-100 font-bold'
+                isASelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-400 dark:text-slate-500 italic font-medium animate-pulse' : 'text-slate-800 dark:text-slate-100 font-bold'
               }">${m.teamA}</span>
-              <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
+              <span class="text-xs font-black text-slate-800 dark:text-white font-mono bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
             </div>
             <!-- TEAM B -->
-            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isBSelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
+            <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isBSelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-950/40'}">
               <span class="text-xs truncate max-w-[130px] ${
-                isBSelected ? 'text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-500 italic font-medium animate-pulse' : 'text-slate-100 font-bold'
+                isBSelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-400 dark:text-slate-500 italic font-medium animate-pulse' : 'text-slate-800 dark:text-slate-100 font-bold'
               }">${m.teamB}</span>
-              <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
+              <span class="text-xs font-black text-slate-800 dark:text-white font-mono bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
             </div>
           </div>
         </div>
@@ -259,38 +259,45 @@
 
       let html = `
         <!-- HEADER -->
-        <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 shadow-lg">
+        <header class="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-md dark:shadow-lg transition-colors duration-200">
           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
               <div class="bg-emerald-500 text-slate-950 p-2 rounded-xl shadow-lg">
                 <i data-lucide="flame" class="w-6 h-6 animate-pulse"></i>
               </div>
               <div>
-                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r bg-clip-text text-transparent from-emerald-400 to-teal-200">FIFA VB 2026</h1>
-                <p class="text-[10px] text-slate-400 font-semibold tracking-widest uppercase">Élő Közvetítő Központ</p>
+                <h1 class="font-black text-lg tracking-wider bg-gradient-to-r bg-clip-text text-transparent from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-200">FIFA VB 2026</h1>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold tracking-widest uppercase">Élő Közvetítő Központ</p>
               </div>
             </div>
 
-            <!-- MENU TABS (Mobil-optimalizált reszponzív navigáció) -->
-            <div class="flex items-center space-x-1 sm:space-x-1.5">
-              <button id="btn-tab-bracket" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
-                <span class="flex items-center space-x-1"><i data-lucide="git-merge" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Ágrajz</span><span class="xs:hidden">Ág</span></span>
-              </button>
-              <button id="btn-tab-schedule" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'schedule' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
-                <span class="flex items-center space-x-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Időrend</span><span class="xs:hidden">Idő</span></span>
-              </button>
-              <button id="btn-tab-viewer" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
-                <span class="flex items-center space-x-1"><i data-lucide="tv" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Közvetítés</span><span class="xs:hidden">Élő</span></span>
-              </button>
-              <button id="btn-tab-admin" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'admin' ? 'bg-slate-850 text-emerald-400 border border-emerald-500/20' : 'text-slate-400 hover:text-white hover:bg-slate-800'}">
-                <span class="flex items-center space-x-1"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Közvetítő Pult</span><span class="xs:hidden">Gép</span></span>
+            <div class="flex items-center space-x-2 sm:space-x-3">
+              <!-- MENU TABS -->
+              <div class="flex items-center space-x-1 sm:space-x-1.5">
+                <button id="btn-tab-bracket" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'bracket' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span class="flex items-center space-x-1"><i data-lucide="git-merge" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Ágrajz</span><span class="xs:hidden">Ág</span></span>
+                </button>
+                <button id="btn-tab-schedule" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'schedule' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span class="flex items-center space-x-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Időrend</span><span class="xs:hidden">Idő</span></span>
+                </button>
+                <button id="btn-tab-viewer" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'viewer' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/10' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span class="flex items-center space-x-1"><i data-lucide="tv" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Közvetítés</span><span class="xs:hidden">Élő</span></span>
+                </button>
+                <button id="btn-tab-admin" class="px-3 py-2 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all ${state.activeTab === 'admin' ? 'bg-slate-100 dark:bg-slate-850 text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-emerald-500/20' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'}">
+                  <span class="flex items-center space-x-1"><i data-lucide="settings" class="w-3.5 h-3.5"></i><span class="hidden xs:inline">Közvetítő Pult</span><span class="xs:hidden">Gép</span></span>
+                </button>
+              </div>
+
+              <!-- LIGHT/DARK THEME TOGGLE -->
+              <button id="btn-toggle-theme" class="p-2 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all" title="Téma váltása">
+                <i data-lucide="${state.theme === 'light' ? 'moon' : 'sun'}" class="w-4 h-4"></i>
               </button>
             </div>
           </div>
         </header>
 
         <!-- STATUS BAR -->
-        <div class="bg-slate-900 border-b border-slate-800 text-xs text-slate-400 py-2">
+        <div class="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400 py-2 transition-colors duration-200">
           <div class="max-w-7xl mx-auto px-4 flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center space-x-4">
               <div class="flex items-center space-x-2">
@@ -298,18 +305,18 @@
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full ${state.isConnected ? 'bg-emerald-400' : 'bg-amber-400'} opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 ${state.isConnected ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
                 </span>
-                <span class="font-semibold ${state.isConnected ? 'text-emerald-400' : 'text-amber-400'}">
+                <span class="font-semibold ${state.isConnected ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}">
                   ${state.isConnected ? 'Élő felhő kapcsolat aktív' : 'Helyi mód (Offline)'}
                 </span>
               </div>
             </div>
             ${state.isConnected ? `
-              <button id="btn-reset-setup" class="text-[10px] text-slate-500 hover:text-rose-400 flex items-center space-x-1">
+              <button id="btn-reset-setup" class="text-[10px] text-slate-400 hover:text-rose-500 dark:text-slate-500 dark:hover:text-rose-400 flex items-center space-x-1 transition-colors">
                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
                 <span>Kapcsolat bontása</span>
               </button>
             ` : `
-              <span class="text-[10px] text-slate-500">Háttérben szinkronizálunk...</span>
+              <span class="text-[10px] text-slate-400 dark:text-slate-500">Háttérben szinkronizálunk...</span>
             `}
           </div>
         </div>
@@ -321,38 +328,38 @@
       if (state.activeTab === 'bracket') {
         html += `
           <div class="space-y-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5">
               <div>
-                <h2 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                  <i data-lucide="award" class="text-emerald-400"></i>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                  <i data-lucide="award" class="text-emerald-500 dark:text-emerald-400"></i>
                   <span>Kieséses Szakasz (32 Csapat)</span>
                 </h2>
-                <p class="text-xs text-slate-400 mt-1">Kövesd végig az egyenes kieséses szakasz alakulását. <b>Minden időpont magyar idő (CEST) szerint értendő.</b></p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Kövesd végig az egyenes kieséses szakasz alakulását. <b>Minden időpont magyar idő (CEST) szerint értendő.</b></p>
               </div>
 
-              <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 self-start">
-                <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Bal Ág</button>
-                <button id="btn-bracket-right" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'right' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Jobb Ág</button>
-                <button id="btn-bracket-finals" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'finals' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'}">Döntők</button>
+              <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 self-start">
+                <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}">Bal Ág</button>
+                <button id="btn-bracket-right" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'right' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}">Jobb Ág</button>
+                <button id="btn-bracket-finals" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'finals' ? 'bg-emerald-500 text-slate-950' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}">Döntők</button>
               </div>
             </div>
 
             <!-- BAL ÁG -->
             ${state.bracketTab === 'left' ? `
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-950 p-4 rounded-3xl border border-slate-900">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-100/50 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900">
                 <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Legjobb 32 (Bal Ág)</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Legjobb 32 (Bal Ág)</h3>
                   ${renderBracketCard("M73")}${renderBracketCard("M74")}${renderBracketCard("M75")}${renderBracketCard("M76")}
                   ${renderBracketCard("M77")}${renderBracketCard("M78")}${renderBracketCard("M79")}${renderBracketCard("M80")}
                 </div>
                 <div class="space-y-8 md:pt-12">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Nyolcaddöntő</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Nyolcaddöntő</h3>
                   <div class="space-y-16">
                     ${renderBracketCard("M89")}${renderBracketCard("M90")}${renderBracketCard("M91")}${renderBracketCard("M92")}
                   </div>
                 </div>
                 <div class="space-y-16 md:pt-24">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Negyeddöntő</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Negyeddöntő</h3>
                   <div class="space-y-36">
                     ${renderBracketCard("M97")}${renderBracketCard("M98")}
                   </div>
@@ -362,20 +369,20 @@
 
             <!-- JOBB ÁG -->
             ${state.bracketTab === 'right' ? `
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-950 p-4 rounded-3xl border border-slate-900">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-100/50 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900">
                 <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Legjobb 32 (Jobb Ág)</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Legjobb 32 (Jobb Ág)</h3>
                   ${renderBracketCard("M81")}${renderBracketCard("M82")}${renderBracketCard("M83")}${renderBracketCard("M84")}
                   ${renderBracketCard("M85")}${renderBracketCard("M86")}${renderBracketCard("M87")}${renderBracketCard("M88")}
                 </div>
                 <div class="space-y-8 md:pt-12">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Nyolcaddöntő</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Nyolcaddöntő</h3>
                   <div class="space-y-16">
                     ${renderBracketCard("M93")}${renderBracketCard("M94")}${renderBracketCard("M95")}${renderBracketCard("M96")}
                   </div>
                 </div>
                 <div class="space-y-16 md:pt-24">
-                  <h3 class="text-[10px] text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-900 pb-2">Negyeddöntő</h3>
+                  <h3 class="text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-2">Negyeddöntő</h3>
                   <div class="space-y-36">
                     ${renderBracketCard("M99")}${renderBracketCard("M100")}
                   </div>
@@ -386,23 +393,23 @@
             <!-- FINALS -->
             ${state.bracketTab === 'finals' ? `
               <div class="max-w-4xl mx-auto space-y-12">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-900/40 p-8 rounded-3xl border border-slate-800">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center bg-slate-100/50 dark:bg-slate-900/40 p-8 rounded-3xl border border-slate-200 dark:border-slate-800">
                   <div class="space-y-12">
-                    <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2">Elődöntők</h3>
+                    <h3 class="text-xs text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-800 pb-2">Elődöntők</h3>
                     ${renderBracketCard("M101")}
                     ${renderBracketCard("M102")}
                   </div>
-                  <div class="hidden md:flex flex-col items-center justify-center text-slate-500">
+                  <div class="hidden md:flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                     <i data-lucide="chevron-right" class="w-8 h-8 text-emerald-500 animate-pulse"></i>
                     <span class="text-[10px] font-bold uppercase tracking-wider mt-2">Döntőbe</span>
                   </div>
                   <div class="space-y-8">
                     <div>
-                      <h3 class="text-xs text-amber-400 font-black uppercase tracking-widest text-center border-b border-amber-500/20 pb-2 mb-3">Döntő</h3>
+                      <h3 class="text-xs text-amber-600 dark:text-amber-400 font-black uppercase tracking-widest text-center border-b border-amber-200 dark:border-amber-500/20 pb-2 mb-3">Döntő</h3>
                       ${renderBracketCard("M104")}
                     </div>
                     <div>
-                      <h3 class="text-xs text-slate-400 font-black uppercase tracking-widest text-center border-b border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
+                      <h3 class="text-xs text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-3">Harmadik helyért</h3>
                       ${renderBracketCard("M103")}
                     </div>
                   </div>
@@ -413,7 +420,7 @@
         `;
       }
 
-      // --- TAB 1.5: IDŐRENDI PROGRAM (DINAMIKUS CSOPORTOSÍTÁSSAL) ---
+      // --- TAB 1.5: IDŐRENDI PROGRAM (PONTOS DÁTUM ALAPÚ KRONOLÓGIAI CSOPORTOSÍTÁSSAL) ---
       if (state.activeTab === 'schedule') {
         const b = state.liveState?.bracket || defaultBracketMatches;
         
@@ -450,25 +457,25 @@
         const sortedKeys = Object.keys(groups).sort();
 
         html += `
-          <div class="space-y-8 max-w-4xl mx-auto">
-            <div class="border-b border-slate-800 pb-5">
-              <h2 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                <i data-lucide="calendar" class="text-emerald-400 animate-pulse"></i>
+          <div class="space-y-8 max-w-4xl mx-auto animate-fadeIn">
+            <div class="border-b border-slate-200 dark:border-slate-800 pb-5">
+              <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="calendar" class="text-emerald-500 dark:text-emerald-400"></i>
                 <span>Közelgő Mérkőzések Időrendben</span>
               </h2>
-              <p class="text-xs text-slate-400 mt-1">
-                Az egyenes kieséses szakasz lejátszásra kész mérkőzései napi bontásban. A magyar idő szerinti éjféli és hajnali meccsek az előző nap esti programjánál szerepelnek.
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Az egyenes kieséses szakasz lejátszásra kész mérkőzései napi bontásban. A magyar idő szerinti éjféli és kora hajnali (0:00 - 05:59) meccsek az előző nap esti programjánál szerepelnek.
               </p>
             </div>
 
             ${sortedKeys.length === 0 ? `
-              <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 text-center flex flex-col items-center justify-center space-y-4">
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400">
+              <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center space-y-4 shadow-sm">
+                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500">
                   <i data-lucide="calendar" class="w-8 h-8"></i>
                 </div>
                 <div>
-                  <h3 class="font-black text-xl text-slate-200">Nincs lejátszásra kész közelgő meccs</h3>
-                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">
+                  <h3 class="font-black text-xl text-slate-800 dark:text-slate-200">Nincs lejátszásra kész közelgő meccs</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1">
                     Amint eldőlnek a korábbi mérkőzések győztesei az Ágrajzon, az új párosítások azonnal és automatikusan megnyílnak itt!
                   </p>
                 </div>
@@ -478,14 +485,14 @@
               const formattedHeaderDate = group.dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
               
               return `
-                <div class="space-y-4 bg-slate-900/10 border border-slate-900 p-4 sm:p-6 rounded-3xl">
+                <div class="space-y-4 bg-white dark:bg-slate-900/10 border border-slate-200 dark:border-slate-900 p-4 sm:p-6 rounded-3xl shadow-sm">
                   <!-- Napi Csoport Fejléc -->
-                  <div class="sticky top-16 z-10 bg-slate-950/90 backdrop-blur py-2.5 border-b border-slate-800/80 flex items-center justify-between">
-                    <h3 class="text-sm sm:text-base font-black text-emerald-400 tracking-wide flex items-center gap-2 capitalize">
+                  <div class="sticky top-16 z-10 bg-white/95 dark:bg-slate-950/90 backdrop-blur py-2.5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+                    <h3 class="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 tracking-wide flex items-center gap-2 capitalize">
                       <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                       <span>${formattedHeaderDate}</span>
                     </h3>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3 py-1 rounded-full">
                       ${group.matches.length} mérkőzés
                     </span>
                   </div>
@@ -499,34 +506,34 @@
                       return `
                         <div class="relative group">
                           <!-- Idővonal gömb -->
-                          <div class="absolute -left-[33px] top-1.5 bg-slate-950 border-2 ${isDawn ? 'border-amber-400' : 'border-emerald-500'} w-4 h-4 rounded-full group-hover:bg-emerald-400 transition-colors shadow-lg"></div>
+                          <div class="absolute -left-[33px] top-1.5 bg-white dark:bg-slate-950 border-2 ${isDawn ? 'border-amber-400' : 'border-emerald-500'} w-4 h-4 rounded-full group-hover:bg-emerald-400 transition-colors shadow-sm"></div>
 
-                          <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300 shadow-md">
-                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-3 mb-4 text-xs font-bold text-slate-400">
-                              <span class="text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg uppercase tracking-wider font-mono">${m.id}</span>
-                              <span class="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg">
-                                <i data-lucide="clock" class="w-3.5 h-3.5 ${isDawn ? 'text-amber-400' : 'text-emerald-400'}"></i>
-                                <span>${formattedTime} CEST ${isDawn ? '<span class="text-amber-400 font-normal text-[10px] ml-1">(másnap hajnalban)</span>' : ''}</span>
+                          <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300 shadow-sm">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/60 pb-3 mb-4 text-xs font-bold text-slate-500 dark:text-slate-400">
+                              <span class="text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg uppercase tracking-wider font-mono">${m.id}</span>
+                              <span class="flex items-center gap-1.5 bg-white dark:bg-slate-950 px-3 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 ${isDawn ? 'text-amber-500' : 'text-emerald-500'}"></i>
+                                <span>${formattedTime} CEST ${isDawn ? '<span class="text-amber-500 dark:text-amber-400 font-normal text-[10px] ml-1">(másnap hajnalban)</span>' : ''}</span>
                               </span>
-                              <span class="text-slate-400 font-medium">${m.venue || 'Helyszín'}</span>
+                              <span class="text-slate-500 dark:text-slate-400 font-medium">${m.venue || 'Helyszín'}</span>
                             </div>
 
                             <div class="flex items-center justify-between gap-4 py-2">
                               <!-- Team A -->
                               <div class="flex-1 flex items-center justify-end space-x-3 text-right">
-                                <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamA}</span>
-                                <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
+                                <span class="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">${m.teamA}</span>
+                                <div class="w-10 h-10 bg-slate-100 dark:bg-slate-950 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
                               </div>
 
                               <!-- VS elválasztó -->
-                              <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center min-w-[60px] font-black text-xs text-emerald-400 font-mono shadow-inner tracking-widest">
+                              <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl text-center min-w-[60px] font-black text-xs text-emerald-600 dark:text-emerald-400 font-mono shadow-inner tracking-widest">
                                 VS
                               </div>
 
                               <!-- Team B -->
                               <div class="flex-1 flex items-center justify-start space-x-3 text-left">
-                                <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
-                                <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamB}</span>
+                                <div class="w-10 h-10 bg-slate-100 dark:bg-slate-950 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
+                                <span class="font-extrabold text-sm sm:text-base text-slate-800 dark:text-slate-100">${m.teamB}</span>
                               </div>
                             </div>
                           </div>
@@ -544,44 +551,44 @@
       // --- TAB 2: NÉZŐI KÖZVETÍTÉSEK ---
       if (state.activeTab === 'viewer') {
         html += `
-          <div class="space-y-8">
+          <div class="space-y-8 animate-fadeIn">
             ${activeLiveMatch ? `
-              <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900 to-emerald-950/20 rounded-3xl border border-emerald-500/20 shadow-2xl">
-                <div class="absolute top-4 left-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-black tracking-widest flex items-center space-x-1.5 animate-pulse">
-                  <i data-lucide="activity" class="w-3 text-emerald-400"></i>
+              <div class="relative overflow-hidden bg-gradient-to-br from-white via-white to-emerald-50/10 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20 rounded-3xl border border-slate-200 dark:border-emerald-500/20 shadow-lg dark:shadow-2xl">
+                <div class="absolute top-4 left-4 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full text-xs font-black tracking-widest flex items-center space-x-1.5 animate-pulse">
+                  <i data-lucide="activity" class="w-3 text-emerald-500 dark:text-emerald-400"></i>
                   <span>ÉLŐ KÖZVETÍTÉS</span>
                 </div>
                 <div class="p-8 flex flex-col items-center text-center">
-                  <span class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-4">
+                  <span class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-4">
                     ${activeLiveMatch.group || 'Csoportmérkőzés'} • ${activeLiveMatch.place}
                   </span>
                   <div class="w-full max-w-2xl flex items-center justify-between my-8">
                     <div class="flex-1 flex items-center justify-center flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">⚽</div>
-                      <h3 class="text-lg sm:text-xl font-black text-slate-100">${activeLiveMatch.teamA}</h3>
+                      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-200 dark:border-slate-700">⚽</div>
+                      <h3 class="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">${activeLiveMatch.teamA}</h3>
                     </div>
-                    <div class="px-6 py-3 bg-slate-950/80 border border-slate-800 rounded-2xl flex flex-col items-center justify-center min-w-[120px] shadow-inner">
-                      <span class="text-3xl sm:text-5xl font-black tracking-tight text-white">${activeLiveMatch.score}</span>
-                      <span class="text-[10px] text-emerald-400 font-bold tracking-widest mt-1 uppercase bg-emerald-500/10 px-2 py-0.5 rounded-full">${activeLiveMatch.status}</span>
+                    <div class="px-6 py-3 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col items-center justify-center min-w-[120px] shadow-inner">
+                      <span class="text-3xl sm:text-5xl font-black tracking-tight text-slate-800 dark:text-white">${activeLiveMatch.score}</span>
+                      <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold tracking-widest mt-1 uppercase bg-emerald-500/10 px-2 py-0.5 rounded-full">${activeLiveMatch.status}</span>
                     </div>
                     <div class="flex-1 flex items-center justify-center flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
-                      <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-700">⚽</div>
-                      <h3 class="text-lg sm:text-xl font-black text-slate-100">${activeLiveMatch.teamB}</h3>
+                      <div class="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-3xl shadow-lg border border-slate-200 dark:border-slate-700">⚽</div>
+                      <h3 class="text-lg sm:text-xl font-black text-slate-800 dark:text-slate-100">${activeLiveMatch.teamB}</h3>
                     </div>
                   </div>
                   ${activeLiveMatch.events && activeLiveMatch.events.length > 0 ? `
-                    <div class="w-full max-w-xl text-left border-t border-slate-800 pt-6 mt-4">
-                      <h4 class="text-xs text-slate-400 font-extrabold tracking-widest uppercase mb-4 flex items-center space-x-2">
-                        <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i>
+                    <div class="w-full max-w-xl text-left border-t border-slate-200 dark:border-slate-800 pt-6 mt-4">
+                      <h4 class="text-xs text-slate-500 dark:text-slate-400 font-extrabold tracking-widest uppercase mb-4 flex items-center space-x-2">
+                        <i data-lucide="activity" class="w-4 h-4 text-emerald-500 dark:text-emerald-400"></i>
                         <span>Események Idővonala</span>
                       </h4>
-                      <div class="relative border-l border-slate-800 ml-4 pl-6 space-y-5">
+                      <div class="relative border-l border-slate-200 dark:border-slate-800 ml-4 pl-6 space-y-5">
                         ${activeLiveMatch.events.map(ev => `
                           <div class="relative">
-                            <span class="absolute -left-[35px] top-0 bg-slate-900 border border-slate-800 text-sm w-7 h-7 rounded-full flex items-center justify-center shadow-md">${ev.icon}</span>
-                            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-all">
-                              <span class="inline-block text-xs font-bold text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded mb-1">${ev.time}</span>
-                              <p class="text-sm font-medium text-slate-300">${ev.text}</p>
+                            <span class="absolute -left-[35px] top-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm w-7 h-7 rounded-full flex items-center justify-center shadow-sm">${ev.icon}</span>
+                            <div class="bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
+                              <span class="inline-block text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded mb-1">${ev.time}</span>
+                              <p class="text-sm font-medium text-slate-700 dark:text-slate-300">${ev.text}</p>
                             </div>
                           </div>
                         `).join('')}
@@ -591,36 +598,36 @@
                 </div>
               </div>
             ` : `
-              <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 text-center flex flex-col items-center justify-center space-y-4">
-                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400"><i data-lucide="tv" class="w-8 h-8"></i></div>
+              <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 text-center flex flex-col items-center justify-center space-y-4 shadow-sm">
+                <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-slate-400 dark:text-slate-500"><i data-lucide="tv" class="w-8 h-8"></i></div>
                 <div>
-                  <h3 class="font-black text-xl text-slate-200">Nincs folyamatban élő mérkőzés</h3>
-                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">Az adminisztrációs felületen indíthatsz és módosíthatsz élő meccseket.</p>
+                  <h3 class="font-black text-xl text-slate-800 dark:text-slate-200">Nincs folyamatban élő mérkőzés</h3>
+                  <p class="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto mt-1">Az adminisztrációs felületen indíthatsz és módosíthatsz élő meccseket.</p>
                 </div>
               </div>
             `}
 
             <!-- CSOPORTMÉRKŐZÉSEK GRIDJE -->
             <div class="space-y-4">
-              <h3 class="text-xs text-slate-400 font-black tracking-widest uppercase flex items-center space-x-2">
+              <h3 class="text-xs text-slate-400 dark:text-slate-500 font-black tracking-widest uppercase flex items-center space-x-2">
                 <i data-lucide="calendar" class="w-4 h-4"></i>
-                <span>Mérkőzések és Eredmények</span>
+                <span>Lejátszott mérkőzések</span>
               </h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 ${state.liveState?.parsed?.matches?.map(match => `
-                  <div class="p-6 bg-slate-900/50 border border-slate-850 rounded-2xl flex items-center justify-between">
+                  <div class="p-6 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-850 rounded-2xl flex items-center justify-between shadow-sm">
                     <div>
-                      <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2">${match.group || 'Csoportkör'}</span>
+                      <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">${match.group || 'Csoportkör'}</span>
                       <div class="space-y-1">
-                        <div class="font-bold text-sm text-slate-200">${match.teamA}</div>
-                        <div class="font-bold text-sm text-slate-200">${match.teamB}</div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-slate-200">${match.teamA}</div>
+                        <div class="font-bold text-sm text-slate-800 dark:text-slate-200">${match.teamB}</div>
                       </div>
                     </div>
-                    <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center">
-                      <span class="font-mono font-black text-lg text-white">${match.score}</span>
+                    <div class="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl text-center shadow-inner">
+                      <span class="font-mono font-black text-lg text-slate-800 dark:text-white">${match.score}</span>
                     </div>
                   </div>
-                `).join('') || '<div class="col-span-2 text-center text-slate-600 italic py-4">Nincs betöltött mérkőzés.</div>'}
+                `).join('') || '<div class="col-span-2 text-center text-slate-500 italic py-4">Nincs betöltött mérkőzés.</div>'}
               </div>
             </div>
           </div>
@@ -631,16 +638,16 @@
       if (state.activeTab === 'admin') {
         if (!state.isAdminAuthenticated) {
           html += `
-            <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-xl space-y-4 max-w-md mx-auto">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-lg dark:shadow-xl space-y-4 max-w-md mx-auto transition-colors">
               <div class="flex flex-col items-center text-center space-y-2">
-                <div class="bg-slate-950 p-3 rounded-2xl border border-slate-850 text-emerald-400"><i data-lucide="lock" class="w-6 h-6"></i></div>
-                <h3 class="font-black text-lg text-slate-100">Közvetítői Hozzáférés</h3>
-                <p class="text-xs text-slate-400 max-w-xs">Az adások és az ágrajz éles módosításához kérlek írd be a jelszót.</p>
+                <div class="bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-100 dark:border-slate-850 text-emerald-500 dark:text-emerald-400"><i data-lucide="lock" class="w-6 h-6"></i></div>
+                <h3 class="font-black text-lg text-slate-800 dark:text-slate-100">Közvetítői Hozzáférés</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 max-w-xs">Az adások és az ágrajz éles módosításához kérlek írd be a jelszót.</p>
               </div>
               <form id="form-admin-login" class="space-y-4 pt-2">
                 <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Belépési Kód</label>
-                  <input type="password" id="input-admin-password" value="${state.adminPasswordInput}" placeholder="Írd be a jelszót..." class="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-white focus:outline-none" />
+                  <label class="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-400 tracking-wider mb-1.5">Belépési Kód</label>
+                  <input type="password" id="input-admin-password" value="${state.adminPasswordInput}" placeholder="Belépési jelszó..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-sm text-slate-800 dark:text-white focus:outline-none" />
                 </div>
                 <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg">Belépés</button>
               </form>
@@ -649,41 +656,41 @@
         } 
         else if (!db) {
           html += `
-            <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-2xl space-y-6 mx-auto">
-              <div class="flex items-center space-x-3 text-emerald-400">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 max-w-lg w-full shadow-lg dark:shadow-2xl space-y-6 mx-auto">
+              <div class="flex items-center space-x-3 text-emerald-500 dark:text-emerald-400">
                 <i data-lucide="shield-alert" class="w-8 h-8"></i>
                 <h2 class="text-xl font-black tracking-tight">Firebase Kapcsolat Szükséges</h2>
               </div>
               
               ${state.vercelApiError ? `
-                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-400 space-y-1.5">
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 text-xs text-rose-600 dark:text-rose-400 space-y-1.5">
                   <p class="font-bold flex items-center gap-1.5">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
                     Vercel API Diagnosztikai Üzenet:
                   </p>
-                  <p class="font-mono bg-slate-950/50 p-3 rounded border border-rose-500/10 text-[10px] whitespace-pre-wrap leading-relaxed">${state.vercelApiError}</p>
+                  <p class="font-mono bg-slate-50 dark:bg-slate-950/50 p-3 rounded border border-rose-500/10 text-[10px] whitespace-pre-wrap leading-relaxed">${state.vercelApiError}</p>
                 </div>
               ` : ''}
 
               ${state.localSetupError ? `
-                <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-400 flex items-center gap-2">
+                <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl p-3 text-xs text-rose-600 dark:text-rose-400 flex items-center gap-2">
                   <i data-lucide="alert-circle" class="w-4 h-4"></i>
                   <span>${state.localSetupError}</span>
                 </div>
               ` : ''}
               
-              <p class="text-sm text-slate-400 leading-relaxed">
+              <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
                 A Vercel-be beállított környezeti változóid betöltése sikertelen volt. Kérlek, ellenőrizd az útmutatót vagy add meg manuálisan a konfigurációt ehhez a böngészőhöz.
               </p>
 
               <div class="space-y-4">
                 <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Manuális Firebase Config JSON</label>
-                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500"></textarea>
+                  <label class="block text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-1.5">Manuális Firebase Config JSON</label>
+                  <textarea id="setup-config" placeholder='{\n  "apiKey": "...",\n  "authDomain": "...",\n  "projectId": "..."\n}' rows="5" class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs font-mono text-emerald-500 focus:outline-none focus:border-emerald-500"></textarea>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
-                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-850 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+                  <label class="block text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-800 dark:text-white focus:outline-none" />
                 </div>
                 <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
                   <i data-lucide="check"></i>
@@ -695,35 +702,35 @@
         } 
         else {
           html += `
-            <div class="max-w-4xl mx-auto space-y-8">
+            <div class="max-w-4xl mx-auto space-y-8 animate-fadeIn">
               <!-- Ágrajz mentés gomb -->
-              <div class="bg-slate-900 border border-slate-850 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 p-6 rounded-3xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
                 <div>
-                  <h3 class="font-black text-lg text-slate-100 flex items-center gap-2">
-                    <i data-lucide="radio" class="text-blue-400 animate-pulse"></i>
+                  <h3 class="font-black text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <i data-lucide="radio" class="text-blue-500 animate-pulse"></i>
                     <span>Közvetítő Panel</span>
                   </h3>
-                  <p class="text-xs text-slate-400 mt-1">Módosítsd az ágrajz eredményeit, majd szinkronizáld őket a felhővel.</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Módosítsd az ágrajz eredményeit, majd szinkronizáld őket a felhővel.</p>
                 </div>
-                <button id="btn-save-all-cloud" ${state.isPublishing ? 'disabled' : ''} class="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 text-slate-950 font-black py-3 px-6 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2">
+                <button id="btn-save-all-cloud" ${state.isPublishing ? 'disabled' : ''} class="bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-100 dark:disabled:bg-slate-800 text-slate-950 font-black py-3 px-6 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center gap-2">
                   ${state.isPublishing ? '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i>' : '<i data-lucide="upload" class="w-4 h-4"></i>'}
                   <span>Változtatások Élesítése a Weben</span>
                 </button>
               </div>
 
               <!-- ÁGRAJZ MECCSEK SZERKESZTŐJE -->
-              <div class="bg-slate-900 border border-slate-800/80 p-6 rounded-3xl space-y-6">
-                <h4 class="text-xs text-slate-400 font-black tracking-widest uppercase border-b border-slate-800 pb-3 flex items-center gap-2">
-                  <i data-lucide="git-merge" class="text-emerald-400"></i>
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-3xl space-y-6 shadow-sm">
+                <h4 class="text-xs text-slate-500 dark:text-slate-400 font-black tracking-widest uppercase border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
+                  <i data-lucide="git-merge" class="text-emerald-500 dark:text-emerald-400"></i>
                   <span>Kieséses Ágrajz Kezelő Panel</span>
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   ${Object.keys(state.liveState?.bracket || defaultBracketMatches).filter(k => k.startsWith('M')).map(key => {
                     const m = (state.liveState?.bracket || defaultBracketMatches)[key];
                     return `
-                      <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
-                        <div class="flex items-center justify-between text-xs font-bold text-slate-400">
-                          <span class="text-emerald-400 font-black font-mono bg-emerald-500/10 px-2 py-0.5 rounded">
+                      <div class="bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-850 space-y-3">
+                        <div class="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                          <span class="text-emerald-600 dark:text-emerald-400 font-black font-mono bg-emerald-500/10 px-2 py-0.5 rounded">
                             ${m.id} • ${m.date || 'Dátum'} ${m.time ? '• ' + m.time : ''}
                           </span>
                           <span>${m.venue || ''}</span>
@@ -731,13 +738,13 @@
                         <div class="grid grid-cols-2 gap-3">
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamA}</label>
-                            <input type="text" value="${m.scoreA}" placeholder="Gól" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
-                            <button data-match="${m.id}" data-winner="${m.teamA}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                            <input type="text" value="${m.scoreA}" placeholder="Gól" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-white dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <button data-match="${m.id}" data-winner="${m.teamA}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800'}">Továbbjut</button>
                           </div>
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-1">${m.teamB}</label>
-                            <input type="text" value="${m.scoreB}" placeholder="Gól" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
-                            <button data-match="${m.id}" data-winner="${m.teamB}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-900 text-slate-400'}">Továbbjut</button>
+                            <input type="text" value="${m.scoreB}" placeholder="Gól" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-white dark:bg-slate-900 border border-slate-250 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <button data-match="${m.id}" data-winner="${m.teamB}" class="btn-select-winner w-full mt-2 py-1 rounded text-[9px] font-bold uppercase transition-all ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800'}">Továbbjut</button>
                           </div>
                         </div>
                       </div>
@@ -747,12 +754,12 @@
               </div>
 
               <!-- MANUÁLIS MARKDOWN FELTÖLTÉS -->
-              <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4">
-                <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
-                  <i data-lucide="file-text" class="text-emerald-400"></i>
-                  <h3 class="font-black text-slate-100">Kézi Közvetítés (Markdown Napló)</h3>
+              <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl space-y-4 shadow-sm">
+                <div class="flex items-center space-x-2 border-b border-slate-100 dark:border-slate-800 pb-3">
+                  <i data-lucide="file-text" class="text-emerald-500 dark:text-emerald-400"></i>
+                  <h3 class="font-black text-slate-800 dark:text-slate-100">Kézi Közvetítés (Markdown Napló)</h3>
                 </div>
-                <textarea id="textarea-markdown-input" rows="6" placeholder="Ide másold be az eredménykövető markdown szöveget..." class="w-full bg-slate-950 border border-slate-850 rounded-2xl p-4 text-xs font-mono text-slate-300 focus:outline-none focus:border-emerald-500">${state.markdownInput}</textarea>
+                <textarea id="textarea-markdown-input" rows="6" placeholder="Ide másold be az eredménykövető markdown szöveget..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-850 rounded-2xl p-4 text-xs font-mono text-slate-800 dark:text-slate-300 focus:outline-none focus:border-emerald-500">${state.markdownInput}</textarea>
                 <button id="btn-manual-publish" class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-black py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
                   <i data-lucide="upload"></i>
                   <span>Csoportkör Napló Publikálása</span>
@@ -765,7 +772,7 @@
 
       if (state.statusMessage) {
         html += `
-          <div class="max-w-md mx-auto mt-6 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${state.statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-400'}">
+          <div class="max-w-md mx-auto mt-6 p-4 rounded-2xl border flex items-start space-x-3 text-xs ${state.statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400'}">
             <i data-lucide="${state.statusMessage.type === 'success' ? 'check' : 'alert-circle'}" class="w-5 h-5 flex-shrink-0"></i>
             <span class="font-semibold">${state.statusMessage.text}</span>
           </div>
@@ -774,10 +781,10 @@
 
       html += `
         </main>
-        <footer class="border-t border-slate-900 bg-slate-950 text-slate-500 text-xs py-8 mt-16">
+        <footer class="border-t border-slate-200 dark:border-slate-900 bg-white dark:bg-slate-950 text-slate-400 dark:text-slate-500 text-xs py-8 mt-16 transition-colors">
           <div class="max-w-7xl mx-auto px-4 text-center space-y-2">
             <p class="font-semibold">⚽ FIFA VB 2026 – Valós Idejű Rendszer</p>
-            <p class="text-[10px] text-slate-600">Ez a weboldal felhőalapú Firestore adatbázist használ a közvetítések másodperces szinkronizálására.</p>
+            <p class="text-[10px] text-slate-400 dark:text-slate-600">Ez a weboldal felhőalapú Firestore adatbázist használ a közvetítések másodperces szinkronizálására.</p>
           </div>
         </footer>
       `;
@@ -794,6 +801,9 @@
       document.getElementById('btn-bracket-left')?.addEventListener('click', () => { state.bracketTab = 'left'; render(); });
       document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
       document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
+
+      // Téma váltó gomb bekötése
+      document.getElementById('btn-toggle-theme')?.addEventListener('click', toggleTheme);
 
       // Leválasztás esemény (config törlése)
       document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
@@ -908,6 +918,24 @@
       });
     };
 
+    // --- TÉMA VÁLTÓ FUNKCIÓ ---
+    const toggleTheme = () => {
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
+      localStorage.setItem('vb_2026_theme', state.theme);
+      applyTheme();
+      render();
+    };
+
+    const applyTheme = () => {
+      if (state.theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    };
+
     // --- SETUP SAVER (No alert!) ---
     const saveFirebaseSetup = () => {
       const configStr = document.getElementById('setup-config').value;
@@ -927,11 +955,18 @@
 
     // --- INITIALIZER ---
     window.onload = async () => {
+      // Téma betöltése a memóriából (alapértelmezett: light)
+      const savedTheme = localStorage.getItem('vb_2026_theme');
+      state.theme = savedTheme || 'light';
+      applyTheme();
+
       // AZONNALI ELŐ-RENDERELÉS ALAPÉRTELMEZETT ADATOKKAL (0.1 mp betöltési idő!)
       state.liveState = {
         bracket: defaultBracketMatches,
         parsed: { ceremonies: [], matches: [] }
       };
+      
+      // Befűzzük a Téma gombot a Headeren kívülre is, ha még nincs ott
       render();
 
       let config = null;
@@ -972,7 +1007,7 @@
         }
       }
 
-      // Ha nincs konfiguráció egyáltalán, csendben helyi módban maradunk, az ágrajz már látható
+      // Adatbázis-kapcsolat rákötése a háttérben, ha van érvényes config
       if (!config) {
         return;
       }
