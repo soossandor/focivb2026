@@ -42,7 +42,7 @@
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-slate-950">
 
   <div id="app">
-    <!-- Dinamikus betöltő képernyő (nagyon rövid ideig látszik csak az instant render miatt) -->
+    <!-- Dinamikus betöltő képernyő (csak az első inicializáláskor látszik tizedmásodpercekig) -->
     <div class="min-h-screen flex flex-col items-center justify-center">
       <div class="animate-spin text-emerald-500 w-12 h-12 border-4 border-current border-t-transparent rounded-full mb-4"></div>
       <p class="text-slate-400 font-medium">Rendszer inicializálása...</p>
@@ -143,25 +143,45 @@
       return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett') || lower.includes('hely');
     };
 
-    // --- IDŐRENDI MECCS PARSER ÉS RENDEZŐ SEGÉDFÜGGVÉNY ---
+    // --- KRONOLÓGIAI PARSER (MAGYAR IDŐ/CEST SZERINT) ---
     const parseMatchDateTime = (dateStr, timeStr) => {
       if (!dateStr) return new Date(2026, 11, 31);
-      let month = 5; // június indexe: 5
-      if (dateStr.includes('júl')) {
-        month = 6; // július indexe: 6
+      
+      let month = 5; // június alapértelmezett indexe: 5
+      let day = 1;
+      
+      // 1. Ellenőrizzük, hogy a 'time' mező tartalmaz-e zárójeles valós magyar napot, pl. "(júl. 1.)"
+      const parenMatch = timeStr ? timeStr.match(/\((jún|júl)\.?\s*(\d+)\.?\)/) : null;
+      if (parenMatch) {
+        month = parenMatch[1] === 'júl' ? 6 : 5;
+        day = parseInt(parenMatch[2]);
+      } else {
+        // Ha nincs zárójeles kiegészítő, a fő dátum mezőből nyerjük ki a napot
+        month = dateStr.includes('júl') ? 6 : 5;
+        const dayMatch = dateStr.match(/\d+/);
+        day = dayMatch ? parseInt(dayMatch[0]) : 1;
       }
-      const dayMatch = dateStr.match(/\d+/);
-      const day = dayMatch ? parseInt(dayMatch[0]) : 1;
 
       let hour = 0, minute = 0;
       if (timeStr) {
-        const timeMatch = timeStr.match(/(\d+):(\d+)/);
+        const timeMatch = timeStr.match(/^(\d+):(\d+)/);
         if (timeMatch) {
           hour = parseInt(timeMatch[1]);
           minute = parseInt(timeMatch[2]);
         }
       }
       return new Date(2026, month, day, hour, minute);
+    };
+
+    // --- TORNA JÁTÉKNAP SZÁMÍTÓ (HAJNALI ELTOLÓDÁS KEZELÉSE) ---
+    // Ha a meccs magyar idő szerint hajnali 0:00 és 5:59 között kezdődik,
+    // akkor azt az előző nap esti meccseihez csoportosítjuk (mivel azonos amerikai játéknap)
+    const getTournamentDay = (dateObj) => {
+      const cloned = new Date(dateObj.getTime());
+      if (cloned.getHours() < 6) {
+        cloned.setDate(cloned.getDate() - 1);
+      }
+      return cloned;
     };
 
     // --- PARSER: MARKDOWN TO JSON ---
@@ -245,7 +265,7 @@
             <!-- TEAM B -->
             <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isBSelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
               <span class="text-xs truncate max-w-[130px] ${
-                isBSelected ? 'text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-500 italic font-medium' : 'text-slate-100 font-bold'
+                isBSelected ? 'text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-500 italic font-medium animate-pulse' : 'text-slate-100 font-bold'
               }">${m.teamB}</span>
               <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
             </div>
@@ -415,31 +435,52 @@
         `;
       }
 
-      // --- TAB 1.5: IDŐRENDI PROGRAM (KÖZELGŐ MECCSEK VALÓS CSAPATOKKAL) ---
+      // --- TAB 1.5: IDŐRENDI PROGRAM (DINAMIKUS CSOPORTOSÍTÁSSAL) ---
       if (state.activeTab === 'schedule') {
         const b = state.liveState?.bracket || defaultBracketMatches;
         
-        // Kiszűrjük azokat a meccseket, amik unplayed (nincs gól) és mindkét csapat valódi ország (nem placeholder)
+        // Kiszűrjük azokat a meccseket, ahol már mindkét csapat valódi ország és még nincs eredmény
         const upcomingMatches = Object.values(b).filter(m => {
           return m.teamA && m.teamB && !isPlaceholder(m.teamA) && !isPlaceholder(m.teamB) && m.scoreA === "" && m.scoreB === "" && !m.winner;
         });
 
-        // Időrendbe rendezés az egyedi parserünkkel
+        // 1. Meccsek sorbarendezése a valós magyar időrend (CEST) alapján
         upcomingMatches.sort((a, b) => {
           return parseMatchDateTime(a.date, a.time) - parseMatchDateTime(b.date, b.time);
         });
 
+        // 2. Csoportosítás a Torna Játéknapjai szerint (hajnali meccsek eltolásával)
+        const groups = {};
+        upcomingMatches.forEach(m => {
+          const realDate = parseMatchDateTime(m.date, m.time);
+          const tDay = getTournamentDay(realDate);
+          
+          const key = tDay.toISOString().split('T')[0]; // "2026-06-29"
+          if (!groups[key]) {
+            groups[key] = {
+              dateObj: tDay,
+              matches: []
+            };
+          }
+          groups[key].matches.push({ m, realDate });
+        });
+
+        // Csoport kulcsok rendezése
+        const sortedKeys = Object.keys(groups).sort();
+
         html += `
-          <div class="space-y-6 max-w-4xl mx-auto">
+          <div class="space-y-8 max-w-4xl mx-auto">
             <div class="border-b border-slate-800 pb-5">
               <h2 class="text-2xl font-black tracking-tight text-white flex items-center gap-2">
                 <i data-lucide="calendar" class="text-emerald-400 animate-pulse"></i>
                 <span>Közelgő Mérkőzések Időrendben</span>
               </h2>
-              <p class="text-xs text-slate-400 mt-1">Azok a kieséses meccsek, amelyeknek mindkét résztvevője már ismert, de még nem játszották le őket.</p>
+              <p class="text-xs text-slate-400 mt-1">
+                Az egyenes kieséses szakasz lejátszásra kész mérkőzései napi bontásban. A magyar idő szerinti hajnali meccsek az előző nap esti programjánál szerepelnek.
+              </p>
             </div>
 
-            ${upcomingMatches.length === 0 ? `
+            ${sortedKeys.length === 0 ? `
               <div class="bg-slate-900 p-8 rounded-3xl border border-slate-800 text-center flex flex-col items-center justify-center space-y-4">
                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400">
                   <i data-lucide="calendar" class="w-8 h-8"></i>
@@ -447,56 +488,74 @@
                 <div>
                   <h3 class="font-black text-xl text-slate-200">Nincs lejátszásra kész közelgő meccs</h3>
                   <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">
-                    Amint eldőlnek a korábbi meccsek győztesei az Ágrajzon, az új párosítások automatikusan és azonnal megnyílnak itt időrendben!
+                    Amint eldőlnek a korábbi mérkőzések győztesei az Ágrajzon, az új párosítások azonnal és automatikusan megnyílnak itt!
                   </p>
                 </div>
               </div>
-            ` : `
-              <div class="relative border-l-2 border-emerald-500/20 ml-4 pl-6 space-y-6">
-                ${upcomingMatches.map(m => {
-                  const dateObj = parseMatchDateTime(m.date, m.time);
-                  // Szép magyar dátumformátum (pl. június 29., hétfő)
-                  const formattedDate = dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
-                  
-                  return `
-                    <div class="relative group">
-                      <!-- Idővonal pont -->
-                      <div class="absolute -left-[33px] top-1.5 bg-slate-950 border-2 border-emerald-500 w-4 h-4 rounded-full group-hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-500/20"></div>
+            ` : sortedKeys.map(key => {
+              const group = groups[key];
+              const formattedHeaderDate = group.dateObj.toLocaleDateString('hu-HU', { month: 'long', day: 'numeric', weekday: 'long' });
+              
+              return `
+                <div class="space-y-4 bg-slate-900/10 border border-slate-900 p-4 sm:p-6 rounded-3xl">
+                  <!-- Napi Csoport Fejléc -->
+                  <div class="sticky top-16 z-10 bg-slate-950/90 backdrop-blur py-2.5 border-b border-slate-800/80 flex items-center justify-between">
+                    <h3 class="text-sm sm:text-base font-black text-emerald-400 tracking-wide flex items-center gap-2 capitalize">
+                      <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>${formattedHeaderDate}</span>
+                    </h3>
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-900 border border-slate-800 px-3 py-1 rounded-full">
+                      ${group.matches.length} mérkőzés
+                    </span>
+                  </div>
 
-                      <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300 shadow-lg">
-                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-3 mb-4 text-xs font-bold text-slate-400">
-                          <span class="text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg uppercase tracking-wider font-mono">${m.id}</span>
-                          <span class="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg">
-                            <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i>
-                            <span class="capitalize">${formattedDate} – ${m.time} (CEST)</span>
-                          </span>
-                          <span class="text-slate-400 font-medium">${m.venue || 'Helyszín'}</span>
+                  <!-- Meccsek az adott napon belül -->
+                  <div class="relative border-l-2 border-emerald-500/20 ml-4 pl-6 space-y-5 pt-2">
+                    ${group.matches.map(({ m, realDate }) => {
+                      const formattedTime = m.time.split(' ')[0]; // pl. "22:30" vagy "02:00"
+                      const isDawn = realDate.getHours() < 6;
+                      
+                      return `
+                        <div class="relative group">
+                          <!-- Idővonal gömb -->
+                          <div class="absolute -left-[33px] top-1.5 bg-slate-950 border-2 ${isDawn ? 'border-amber-400' : 'border-emerald-500'} w-4 h-4 rounded-full group-hover:bg-emerald-400 transition-colors shadow-lg"></div>
+
+                          <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300 shadow-md">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/60 pb-3 mb-4 text-xs font-bold text-slate-400">
+                              <span class="text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg uppercase tracking-wider font-mono">${m.id}</span>
+                              <span class="flex items-center gap-1.5 bg-slate-950 px-3 py-1 rounded-lg">
+                                <i data-lucide="clock" class="w-3.5 h-3.5 ${isDawn ? 'text-amber-400' : 'text-emerald-400'}"></i>
+                                <span>${formattedTime} CEST ${isDawn ? '<span class="text-amber-400 font-normal text-[10px] ml-1">(másnap hajnalban)</span>' : ''}</span>
+                              </span>
+                              <span class="text-slate-400 font-medium">${m.venue || 'Helyszín'}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-4 py-2">
+                              <!-- Team A -->
+                              <div class="flex-1 flex items-center justify-end space-x-3 text-right">
+                                <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamA}</span>
+                                <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
+                              </div>
+
+                              <!-- VS elválasztó -->
+                              <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center min-w-[60px] font-black text-xs text-emerald-400 font-mono shadow-inner tracking-widest">
+                                VS
+                              </div>
+
+                              <!-- Team B -->
+                              <div class="flex-1 flex items-center justify-start space-x-3 text-left">
+                                <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
+                                <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamB}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-
-                        <div class="flex items-center justify-between gap-4 py-2">
-                          <!-- Team A -->
-                          <div class="flex-1 flex items-center justify-end space-x-3 text-right">
-                            <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamA}</span>
-                            <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
-                          </div>
-
-                          <!-- VS elválasztó -->
-                          <div class="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center min-w-[60px] font-black text-xs text-emerald-400 font-mono shadow-inner tracking-widest">
-                            VS
-                          </div>
-
-                          <!-- Team B -->
-                          <div class="flex-1 flex items-center justify-start space-x-3 text-left">
-                            <div class="w-10 h-10 bg-slate-950 rounded-full border border-slate-800 flex items-center justify-center text-xl shadow-inner">⚽</div>
-                            <span class="font-extrabold text-sm sm:text-base text-slate-100">${m.teamB}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  `;
-                }).join('')}
-              </div>
-            `}
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
           </div>
         `;
       }
@@ -555,7 +614,7 @@
                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-slate-400"><i data-lucide="tv" class="w-8 h-8"></i></div>
                 <div>
                   <h3 class="font-black text-xl text-slate-200">Nincs folyamatban élő mérkőzés</h3>
-                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">Az adminisztrációs felületen indíthatsz és módosíchatsz élő meccseket.</p>
+                  <p class="text-sm text-slate-400 max-w-md mx-auto mt-1">Az adminisztrációs felületen indíthatsz és módosíthatsz élő meccseket.</p>
                 </div>
               </div>
             `}
@@ -868,7 +927,7 @@
       });
     };
 
-    // --- SETUP SAVER (No alert!) ---
+    // --- SETUP SAVER ---
     const saveFirebaseSetup = () => {
       const configStr = document.getElementById('setup-config').value;
       const customId = document.getElementById('setup-appid').value;
@@ -896,7 +955,7 @@
 
       let config = null;
 
-      // 1. Vercel Serverless API lekérdezése a háttérben (NINCS durva megszakítás, megvárjuk)
+      // 1. Vercel Serverless API lekérdezése a háttérben
       try {
         const apiRes = await fetch('/api/config');
         if (apiRes.ok) {
