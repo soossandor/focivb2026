@@ -87,47 +87,47 @@
       return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett') || lower.includes('hely');
     };
 
-    // HIVATALOS ÉS VALÓS 2026-OS VILÁGBAJNOKI ÁGRAJZ CEST IDŐVEL ÉS BELSŐ ISO DÁTUM ADATTAL
+    // HIVATALOS ÉS HIVATALOSAN JAVÍTOTT 2026-OS VILÁGBAJNOKI ÁGRAJZ CEST IDŐKKEL
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
-      M73: { id: "M73", date: "jún 28.", time: "03:00", datetime: "2026-06-28T03:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamA" },
-      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamA" },
-      M75: { id: "M75", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamB" },
-      M76: { id: "M76", date: "jún 29.", time: "03:00 (jún. 30.)", datetime: "2026-06-30T03:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamA" },
-      M77: { id: "M77", date: "jún 30.", time: "00:00 (júl. 1.)", datetime: "2026-07-01T00:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamB" },
-      M78: { id: "M78", date: "júl 3.", time: "03:00 (júl. 4.)", datetime: "2026-07-04T03:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamB" },
-      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "0", scoreB: "1", winner: "", isLive: true, penaltiesA: "", penaltiesB: "", nextMatch: "M92", slot: "teamA" },
+      M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamA" },
+      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "1", scoreB: "1", winner: "", isLive: true, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamA" },
+      M75: { id: "M75", date: "jún 30.", time: "20:00", datetime: "2026-06-30T20:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamB" },
+      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamA" },
+      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamB" },
+      M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamB" },
+      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M92", slot: "teamA" },
       M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M92", slot: "teamB" },
 
       // JOBB ÁG (Right Bracket) - Legjobb 32
-      M81: { id: "M81", date: "júl 1.", time: "00:00 (júl. 2.)", datetime: "2026-07-02T00:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamA" },
-      M82: { id: "M82", date: "júl 1.", time: "04:00 (júl. 2.)", datetime: "2026-07-02T04:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamB" },
-      M83: { id: "M83", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamA" },
-      M84: { id: "M84", date: "júl 2.", time: "03:00 (júl. 3.)", datetime: "2026-07-03T03:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamB" },
+      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamA" },
+      M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamB" },
+      M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamA" },
+      M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamB" },
       M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M95", slot: "teamA" },
       M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M95", slot: "teamB" },
-      M87: { id: "M87", date: "júl 3.", time: "02:00 (júl. 4.)", datetime: "2026-07-04T02:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamA" },
-      M88: { id: "M88", date: "júl 3.", time: "19:00", datetime: "2026-07-03T19:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamB" },
+      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamA" },
+      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamB" },
 
       // NYOLCADDÖNTŐK (Round of 16)
-      M89: { id: "M89", date: "júl 4.", time: "22:00", datetime: "2026-07-04T22:00", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamA" },
-      M90: { id: "M90", date: "júl 4.", time: "02:00 (júl. 5.)", datetime: "2026-07-05T02:00", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamB" },
-      M91: { id: "M91", date: "júl 5.", time: "22:00", datetime: "2026-07-05T22:00", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamA" },
-      M92: { id: "M92", date: "júl 5.", time: "02:00 (júl. 6.)", datetime: "2026-07-06T02:00", teamA: "Japán", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamB" },
-      M93: { id: "M93", date: "júl 6.", time: "22:00", datetime: "2026-07-06T22:00", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M99", slot: "teamA" },
+      M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamA" },
+      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamB" },
+      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamA" },
+      M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", teamA: "Brazília", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamB" },
+      M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M99", slot: "teamA" },
       M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M99", slot: "teamB" },
-      M95: { id: "M95", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamA" },
-      M96: { id: "M96", date: "júl 7.", time: "02:00 (júl. 8.)", datetime: "2026-07-08T02:00", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamB" },
+      M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamA" },
+      M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamB" },
 
       // NEGYEDDÖNTŐK (Quarterfinals)
-      M97: { id: "M97", date: "júl 9.", time: "22:00", datetime: "2026-07-09T22:00", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamA" },
-      M98: { id: "M98", date: "júl 10.", time: "02:00 (júl. 11.)", datetime: "2026-07-11T02:00", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamB" },
-      M99: { id: "M99", date: "júl 10.", time: "22:00", datetime: "2026-07-10T22:00", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamA" },
-      M100: { id: "M100", date: "júl 11.", time: "02:00 (júl. 12.)", datetime: "2026-07-12T02:00", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamB" },
+      M97: { id: "M97", date: "júl 9.", time: "02:00 (júl. 10.)", datetime: "2026-07-10T02:00", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamA" },
+      M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamB" },
+      M99: { id: "M99", date: "júl 10.", time: "03:00 (júl. 11.)", datetime: "2026-07-11T03:00", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamA" },
+      M100: { id: "M100", date: "júl 11.", time: "07:00 (júl. 12.)", datetime: "2026-07-12T07:00", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamB" },
 
       // ELŐDÖNTŐK (Semifinals)
-      M101: { id: "M101", date: "júl 14.", time: "22:00", datetime: "2026-07-14T22:00", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamA" },
-      M102: { id: "M102", date: "júl 15.", time: "22:00", datetime: "2026-07-15T22:00", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamB" },
+      M101: { id: "M101", date: "júl 14.", time: "19:00", datetime: "2026-07-14T19:00", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamA" },
+      M102: { id: "M102", date: "júl 15.", time: "19:00", datetime: "2026-07-15T19:00", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamB" },
 
       // DÖNTŐ ÉS HARMADIK HELYÉRT
       M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "" },
@@ -162,7 +162,7 @@
       };
     };
 
-    // Virtuális percszámítás a kronológiai rendezéshez
+    // Virtuális percszámítás a kronológiai rendezéshez (24 órás logikai eltolással)
     const getDateTimeMinutes = (dtStr) => {
       const { year, month, day, hour, minute } = parseDateTimeLocal(dtStr);
       const daysInMonths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
