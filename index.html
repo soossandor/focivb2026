@@ -39,10 +39,10 @@
 <body class="bg-slate-950 text-slate-100 font-sans min-h-screen selection:bg-emerald-500 selection:text-slate-950">
 
   <div id="app">
-    <!-- Dinamikus betöltő képernyő -->
+    <!-- Dinamikus betöltő képernyő (nagyon rövid ideig látszik csak az instant render miatt) -->
     <div class="min-h-screen flex flex-col items-center justify-center">
       <div class="animate-spin text-emerald-500 w-12 h-12 border-4 border-current border-t-transparent rounded-full mb-4"></div>
-      <p class="text-slate-400 font-medium">Élő kapcsolat felépítése a rendszerrel...</p>
+      <p class="text-slate-400 font-medium">Rendszer inicializálása...</p>
     </div>
   </div>
 
@@ -136,7 +136,7 @@
     const isPlaceholder = (name) => {
       if (!name) return true;
       const lower = name.toLowerCase();
-      return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett');
+      return lower.includes('nyertes') || lower.includes('vesztes') || lower.includes('csoport') || lower.includes('helyezett') || lower.includes('hely');
     };
 
     // --- PARSER: MARKDOWN TO JSON ---
@@ -213,7 +213,7 @@
             <!-- TEAM A -->
             <div class="flex items-center justify-between p-1.5 rounded-lg transition-colors ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-950/40'}">
               <span class="text-xs truncate max-w-[130px] ${
-                isASelected ? 'text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-500 italic font-medium' : 'text-slate-100 font-bold'
+                isASelected ? 'text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-500 italic font-medium animate-pulse' : 'text-slate-100 font-bold'
               }">${m.teamA}</span>
               <span class="text-xs font-black text-white font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
             </div>
@@ -277,7 +277,7 @@
                 </div>
                 <div>
                   <label class="block text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1.5">Egyedi App ID</label>
-                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-800 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
+                  <input type="text" id="setup-appid" value="foci-vb-2026" class="w-full bg-slate-850 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none" />
                 </div>
                 <button id="btn-save-config" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black tracking-wide py-3 px-4 rounded-xl text-sm transition-all shadow-lg flex items-center justify-center space-x-2">
                   <i data-lucide="check"></i>
@@ -811,7 +811,6 @@
         }
       } catch (err) {
         console.warn("Vercel API nem érhető el időben (helyi futtatás vagy nincs beállítva), ellenőrizzük a helyi tárolókat...");
-        // Nem állítunk be látványos piros hibát, ha van mentett localStorage, mert azzal is tökéletesen elindul
         if (!localStorage.getItem('vb_2026_firebase_config')) {
           state.vercelApiError = `Nem sikerült elérni a Vercel szervert (${err.name === 'AbortError' ? 'Időtúllépés' : err.message}). Kérlek állítsd be a Vercel Environment Variables fülön a projektet, vagy használd az alábbi kézi konfigurációt.`;
         }
@@ -837,48 +836,60 @@
         }
       }
 
-      // Ha nincs konfiguráció, kirajzoljuk a diagnosztikai varázslót
+      // Ha nincs konfiguráció, megállunk és megmutatjuk a beállító panelt
       if (!config) {
         render();
         return;
       }
 
-      // Firebase példányosítás és szinkronizáció (Rule 1, Rule 2, Rule 3)
+      // AZONNALI ELŐ-RENDERELÉS ALAPÉRTELMEZETT ADATOKKAL (0.1 mp betöltési idő!)
+      state.liveState = {
+        bracket: defaultBracketMatches,
+        parsed: { ceremonies: [], matches: [] }
+      };
+      render();
+
+      // Firebase példányosítás és szinkronizáció indítása a háttérben
       try {
         const app = initializeApp(config);
         auth = getAuth(app);
         db = getFirestore(app);
 
-        // Anonymous Auth FIRST (Rule 3)
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-        // Valós idejű Firestore adatfolyam szigorú útvonallal (Rule 1)
-        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-        onSnapshot(docRef, (docSnap) => {
-          if (docSnap.exists()) {
-            state.liveState = docSnap.data();
-            if (state.liveState.rawMarkdown) {
-              state.markdownInput = state.liveState.rawMarkdown;
+        // Névtelen bejelentkezés a háttérben
+        const initAuthAndSync = async () => {
+          try {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await signInAnonymously(auth);
             }
-          } else {
-            state.liveState = {
-              bracket: defaultBracketMatches,
-              parsed: { ceremonies: [], matches: [] }
-            };
+
+            // Kapcsolódás a valós idejű zónához
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
+            onSnapshot(docRef, (docSnap) => {
+              if (docSnap.exists()) {
+                const cloudData = docSnap.data();
+                // Ha a felhőben már van mentett ágrajz vagy meccs, felülírjuk a helyit
+                state.liveState = cloudData;
+                if (state.liveState.rawMarkdown) {
+                  state.markdownInput = state.liveState.rawMarkdown;
+                }
+                render(); // Újrarajzolás a friss felhő-adatokkal
+              }
+            }, (err) => {
+              console.error("Firestore hiba:", err);
+            });
+          } catch (authErr) {
+            console.error("Auth hiba a háttérben:", authErr);
           }
-          render();
-        }, (err) => {
-          console.error("Firestore hiba:", err);
-        });
+        };
+
+        initAuthAndSync();
 
       } catch (err) {
         console.error("Csatlakozási hiba:", err);
         localStorage.removeItem('vb_2026_firebase_config');
-        state.localSetupError = `Nem sikerült kapcsolódni a megadott Firebase-hez: ${err.message}. Ellenőrizd a beállításokat!`;
+        state.localSetupError = `Nem sikerült kapcsolódni a megadott Firebase-hez: ${err.message}. Kérlek ellenőrizd a beállításokat!`;
         render();
       }
     };
