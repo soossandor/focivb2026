@@ -71,6 +71,7 @@
       isPublishing: false,
       statusMessage: null,
       adminPasswordInput: '',
+      hideFinishedAdmin: false, // Új állapot a befejezett meccsek elrejtéséhez az adminban
       
       // Kapcsolódási állapotjelzők
       isConnected: false,
@@ -692,6 +693,22 @@
           `;
         } 
         else {
+          // --- ADMIN MECCSEK ELŐKÉSZÍTÉSE ÉS IDŐRENDI RENDEZÉSE ---
+          const bObj = state.liveState?.bracket || defaultBracketMatches;
+          let adminMatches = Object.values(bObj).filter(m => m.id.startsWith('M'));
+          
+          // 1. Sorbarakjuk őket hajszálpontosan a fali menetrend időrendje szerint
+          adminMatches.sort((a, b) => {
+            const dtA = getMatchDateTimeString(a);
+            const dtB = getMatchDateTimeString(b);
+            return getDateTimeMinutes(dtA) - getDateTimeMinutes(dtB);
+          });
+
+          // 2. Kiszűrjük a befejezett meccseket, ha a kapcsoló aktív
+          if (state.hideFinishedAdmin) {
+            adminMatches = adminMatches.filter(m => !m.winner);
+          }
+
           html += `
             <div class="max-w-4xl mx-auto space-y-8 animate-fadeIn">
               <!-- Mentés gomb -->
@@ -711,13 +728,24 @@
 
               <!-- ÁGRAJZ MECCSEK KEZELŐ PANEL -->
               <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-3xl space-y-6 shadow-sm">
-                <h4 class="text-xs text-slate-500 dark:text-slate-400 font-black tracking-widest uppercase border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
-                  <i data-lucide="git-merge" class="text-emerald-500 dark:text-emerald-400"></i>
-                  <span>Kieséses Ágrajz Kezelő Panel</span>
-                </h4>
+                
+                <!-- FEJLÉC ÉS KÉTÁLLÁSÚ ELREJTŐ KAPCSOLÓ -->
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 dark:border-slate-800/80 pb-4">
+                  <h4 class="text-xs text-slate-500 dark:text-slate-400 font-black tracking-widest uppercase flex items-center gap-2">
+                    <i data-lucide="git-merge" class="text-emerald-500 dark:text-emerald-400"></i>
+                    <span>Kieséses Ágrajz Kezelő Panel</span>
+                  </h4>
+                  <div class="flex items-center">
+                    <label class="inline-flex items-center cursor-pointer select-none">
+                      <input type="checkbox" id="chk-hide-finished" ${state.hideFinishedAdmin ? 'checked' : ''} class="sr-only peer" />
+                      <div class="relative w-9 h-5 bg-slate-200 dark:bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-650 peer-checked:bg-emerald-500"></div>
+                      <span class="ms-2 text-xs font-bold text-slate-600 dark:text-slate-400">Befejezett meccsek elrejtése</span>
+                    </label>
+                  </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  ${Object.keys(state.liveState?.bracket || defaultBracketMatches).filter(k => k.startsWith('M')).map(key => {
-                    const m = (state.liveState?.bracket || defaultBracketMatches)[key];
+                  ${adminMatches.map(m => {
                     const livePeriod = m.livePeriod !== undefined ? m.livePeriod : 1;
                     const isShootoutLive = m.isLive && livePeriod === 3;
                     const isDraw = m.scoreA !== "" && m.scoreB !== "" && m.scoreA === m.scoreB;
@@ -757,9 +785,9 @@
 
                         <!-- ÉLŐ JÁTÉKOS IDŐSZAK KAPCSOLÓ (Csak ha a meccs élő!) -->
                         ${m.isLive ? `
-                          <div class="space-y-1 mt-2 pt-2 border-t border-slate-150 dark:border-slate-800/80">
-                            <label class="block text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">Mérkőzés aktuális fázisa:</label>
-                            <div class="flex bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                          <div class="space-y-1 mt-2 pt-2 border-t border-slate-150 dark:border-slate-800/80 animate-fadeIn">
+                            <label class="block text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">Mérkőzés fázisa:</label>
+                            <div class="flex bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 text-center font-sans">
                               <button data-match="${m.id}" data-period="1" class="btn-set-period flex-1 py-1 text-[9px] font-bold rounded transition-all ${
                                 livePeriod === 1 
                                   ? 'bg-rose-500 text-white shadow font-black' 
@@ -847,6 +875,12 @@
 
       // Téma váltás
       document.getElementById('btn-toggle-theme')?.addEventListener('click', toggleTheme);
+
+      // Befejezett meccsek elrejtő kapcsolójának bindingje
+      document.getElementById('chk-hide-finished')?.addEventListener('change', (e) => {
+        state.hideFinishedAdmin = e.target.checked;
+        render();
+      });
 
       // Leválasztás
       document.getElementById('btn-reset-setup')?.addEventListener('click', () => {
