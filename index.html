@@ -71,7 +71,7 @@
       isPublishing: false,
       statusMessage: null,
       adminPasswordInput: '',
-      hideFinishedAdmin: false, // Új állapot a befejezett meccsek elrejtéséhez az adminban
+      hideFinishedAdmin: false,
       
       // Kapcsolódási állapotjelzők
       isConnected: false,
@@ -92,13 +92,13 @@
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
       M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamA" },
-      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "1", scoreB: "1", winner: "", isLive: true, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
+      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "2", scoreB: "2", winner: "Németország", isLive: false, penaltiesA: "4", penaltiesB: "3", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
       M75: { id: "M75", date: "jún 30.", time: "23:00", datetime: "2026-06-30T23:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
-      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
-      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" },
+      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "1", scoreB: "1", winner: "Marokkó", isLive: false, penaltiesA: "3", penaltiesB: "4", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
+      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "1", scoreB: "2", winner: "Norvégia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" }, // JAVÍTVA: Norvégia az M92-re megy Brazília ellen!
       M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
       M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamA" },
-      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" },
+      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" }, // JAVÍTVA: Mexikó/Ecuador az M90-re megy Németország ellen!
 
       // JOBB ÁG (Right Bracket) - Legjobb 32
       M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamA" },
@@ -112,9 +112,9 @@
 
       // NYOLCADDÖNTŐK (Round of 16)
       M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamA" },
-      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" },
-      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
-      M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", venue: "Atlanta", teamA: "Brazília", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamB" },
+      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Németország", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" }, // JAVÍTVA: teamB placeholder
+      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Marokkó", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
+      M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", venue: "Atlanta", teamA: "Nyertes M79", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamB" }, // JAVÍTVA: M79 és M77 csatlakozik be
       M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", venue: "Boston", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamA" },
       M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", venue: "Philadelphia", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamB" },
       M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamA" },
@@ -133,6 +133,34 @@
       // DÖNTŐ ÉS HARMADIK HELYÉRT
       M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 },
       M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 }
+    };
+
+    // --- AUTOMATIKUS GYŐZTES TOVÁBBJUTTATÓ MOTOR ---
+    // Ez a funkció az egész ágrajzon végigfuttatja a győzteseket a helyi kód javított útvonalai alapján,
+    // így kijavítja az elavult adatbázis-bejegyzéseket a betöltéskor!
+    const propagateAllWinners = (bracket) => {
+      // 1. Minden kieséses meccs résztvevőit visszaállítjuk az alapértelmezett helyőrzőkre
+      for (const key in bracket) {
+        if (defaultBracketMatches[key]) {
+          bracket[key].teamA = defaultBracketMatches[key].teamA;
+          bracket[key].teamB = defaultBracketMatches[key].teamB;
+        }
+      }
+      // 2. Numerikus sorrendbe rendezzük a meccseket (M73-tól M104-ig) a helyes áramlásért
+      const sortedKeys = Object.keys(bracket).sort((x, y) => {
+        return parseInt(x.slice(1)) - parseInt(y.slice(1));
+      });
+      // 3. Végigfuttatjuk a győzteseket az új útvonalakon
+      for (const key of sortedKeys) {
+        const m = bracket[key];
+        if (m.winner) {
+          const nextId = m.nextMatch;
+          const slot = m.slot;
+          if (nextId && slot && bracket[nextId]) {
+            bracket[nextId][slot] = m.winner;
+          }
+        }
+      }
     };
 
     // --- IDŐTÚLLÉPÉS KEZELŐ A BLOKKOLT KÉRÉSEKHEZ ---
@@ -975,12 +1003,7 @@
           b[matchId].winner = winner;
           b[matchId].isLive = false;
 
-          const nextMatchId = b[matchId].nextMatch;
-          const slot = b[matchId].slot;
-
-          if (nextMatchId && slot) {
-            b[nextMatchId][slot] = winner;
-          }
+          propagateAllWinners(b);
           render();
         });
       });
@@ -1134,6 +1157,10 @@
                       data.bracket[key].datetime = defaultBracketMatches[key].datetime || "";
                       data.bracket[key].venue = defaultBracketMatches[key].venue || "";
                       
+                      // JAVÍTVA: A szinkronizált útvonalakat is frissítjük a helyi szabályok alapján!
+                      data.bracket[key].nextMatch = defaultBracketMatches[key].nextMatch;
+                      data.bracket[key].slot = defaultBracketMatches[key].slot;
+
                       // Biztonsági ellenőrzések íráshoz, hogy ne lehessen undefined semmi
                       data.bracket[key].scoreA = data.bracket[key].scoreA !== undefined ? data.bracket[key].scoreA : "";
                       data.bracket[key].scoreB = data.bracket[key].scoreB !== undefined ? data.bracket[key].scoreB : "";
@@ -1144,11 +1171,15 @@
                       data.bracket[key].livePeriod = data.bracket[key].livePeriod !== undefined ? data.bracket[key].livePeriod : 1;
                     }
                   }
+                  // AUTOMATIKUS JAVÍTÁS: Lefuttatjuk a továbbjutókat az új, helyes útvonalakon!
+                  propagateAllWinners(data.bracket);
                 }
                 state.liveState = data;
               } else {
+                const initialBracket = JSON.parse(JSON.stringify(defaultBracketMatches));
+                propagateAllWinners(initialBracket);
                 state.liveState = {
-                  bracket: JSON.parse(JSON.stringify(defaultBracketMatches))
+                  bracket: initialBracket
                 };
               }
               state.isConnected = true;
