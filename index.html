@@ -90,48 +90,48 @@
     // HIVATALOS ÉS HIVATALOSAN JAVÍTOTT 2026-OS VILÁGBAJNOKI ÁGRAJZ CEST IDŐKKEL
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
-      M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamA" },
-      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "1", scoreB: "1", winner: "", isLive: true, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamA" },
-      M75: { id: "M75", date: "jún 30.", time: "20:00", datetime: "2026-06-30T20:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M89", slot: "teamB" },
-      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamA" },
-      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M90", slot: "teamB" },
-      M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M91", slot: "teamB" },
-      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M92", slot: "teamA" },
-      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M92", slot: "teamB" },
+      M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamA" },
+      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "1", scoreB: "1", winner: "", isLive: true, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
+      M75: { id: "M75", date: "jún 30.", time: "20:00", datetime: "2026-06-30T20:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
+      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
+      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" },
+      M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
+      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamA" },
+      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" },
 
       // JOBB ÁG (Right Bracket) - Legjobb 32
-      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamA" },
-      M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M93", slot: "teamB" },
-      M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamA" },
-      M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M94", slot: "teamB" },
-      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M95", slot: "teamA" },
-      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M95", slot: "teamB" },
-      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamA" },
-      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M96", slot: "teamB" },
+      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamA" },
+      M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamB" },
+      M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamA" },
+      M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamB" },
+      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamA" },
+      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamB" },
+      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamA" },
+      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamB" },
 
       // NYOLCADDÖNTŐK (Round of 16)
-      M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamA" },
-      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M97", slot: "teamB" },
-      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamA" },
-      M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", venue: "Atlanta", teamA: "Brazília", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M98", slot: "teamB" },
-      M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", venue: "Boston", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M99", slot: "teamA" },
-      M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", venue: "Philadelphia", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M99", slot: "teamB" },
-      M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamA" },
-      M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", venue: "Vancouver", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M100", slot: "teamB" },
+      M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamA" },
+      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Nyertes M74", teamB: "Nyertes M77", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" },
+      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Nyertes M76", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
+      M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", venue: "Atlanta", teamA: "Brazília", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamB" },
+      M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", venue: "Boston", teamA: "Nyertes M81", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamA" },
+      M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", venue: "Philadelphia", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamB" },
+      M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamA" },
+      M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", venue: "Vancouver", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamB" },
 
       // NEGYEDDÖNTŐK (Quarterfinals)
-      M97: { id: "M97", date: "júl 9.", time: "02:00 (júl. 10.)", datetime: "2026-07-10T02:00", venue: "Boston", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamA" },
-      M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", venue: "Los Angeles", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M101", slot: "teamB" },
-      M99: { id: "M99", date: "júl 10.", time: "03:00 (júl. 11.)", datetime: "2026-07-11T03:00", venue: "Dallas", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamA" },
-      M100: { id: "M100", date: "júl 11.", time: "07:00 (júl. 12.)", datetime: "2026-07-12T07:00", venue: "Miami", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M102", slot: "teamB" },
+      M97: { id: "M97", date: "júl 9.", time: "02:00 (júl. 10.)", datetime: "2026-07-10T02:00", venue: "Boston", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamA" },
+      M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", venue: "Los Angeles", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamB" },
+      M99: { id: "M99", date: "júl 10.", time: "03:00 (júl. 11.)", datetime: "2026-07-11T03:00", venue: "Dallas", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamA" },
+      M100: { id: "M100", date: "júl 11.", time: "07:00 (júl. 12.)", datetime: "2026-07-12T07:00", venue: "Miami", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamB" },
 
       // ELŐDÖNTŐK (Semifinals)
-      M101: { id: "M101", date: "júl 14.", time: "19:00", datetime: "2026-07-14T19:00", venue: "New York/NJ", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamA" },
-      M102: { id: "M102", date: "júl 15.", time: "19:00", datetime: "2026-07-15T19:00", venue: "Atlanta", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", nextMatch: "M104", slot: "teamB" },
+      M101: { id: "M101", date: "júl 14.", time: "19:00", datetime: "2026-07-14T19:00", venue: "New York/NJ", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamA" },
+      M102: { id: "M102", date: "júl 15.", time: "19:00", datetime: "2026-07-15T19:00", venue: "Atlanta", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamB" },
 
       // DÖNTŐ ÉS HARMADIK HELYÉRT
-      M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "" },
-      M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "" }
+      M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 },
+      M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 }
     };
 
     // --- IDŐTÚLLÉPÉS KEZELŐ A BLOKKOLT KÉRÉSEKHEZ ---
@@ -230,6 +230,11 @@
       const isAPlaceholder = isPlaceholder(m.teamA);
       const isBPlaceholder = isPlaceholder(m.teamB);
 
+      // Háromfázisú élő státusz detektálása
+      const livePeriod = m.livePeriod !== undefined ? m.livePeriod : 1;
+      const isShootoutLive = m.isLive && livePeriod === 3;
+      const isOvertimeLive = m.isLive && livePeriod === 2;
+
       return `
         <div class="bg-white dark:bg-slate-900 border rounded-xl p-3 shadow-sm dark:shadow-md transition-all duration-200 relative overflow-hidden ${
           m.isLive 
@@ -244,7 +249,7 @@
             ${m.isLive ? `
               <span class="flex items-center gap-1 text-rose-500 font-black tracking-widest animate-pulse text-[8px]">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                <span>ÉLŐ</span>
+                <span>${isShootoutLive ? '11-ESEK' : isOvertimeLive ? 'HOSSZ.' : 'ÉLŐ'}</span>
               </span>
             ` : m.winner ? `
               <span class="text-emerald-600 dark:text-emerald-400 text-[8px] font-black tracking-wide">VÉGE</span>
@@ -259,7 +264,7 @@
                 isASelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-400 dark:text-slate-500 italic font-medium animate-pulse' : 'text-slate-800 dark:text-slate-100 font-bold'
               }">${m.teamA}</span>
               <div class="flex items-center space-x-1">
-                ${m.penaltiesA ? `<span class="text-[9px] font-black text-amber-500">(${m.penaltiesA})</span>` : ''}
+                ${(m.penaltiesA !== "" && (m.winner || isShootoutLive)) ? `<span class="text-[9px] font-black text-amber-500">(${m.penaltiesA})</span>` : ''}
                 <span class="text-xs font-black text-slate-800 dark:text-white font-mono bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">${m.scoreA !== "" ? m.scoreA : "–"}</span>
               </div>
             </div>
@@ -269,10 +274,25 @@
                 isBSelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : isBPlaceholder ? 'text-slate-400 dark:text-slate-500 italic font-medium animate-pulse' : 'text-slate-800 dark:text-slate-100 font-bold'
               }">${m.teamB}</span>
               <div class="flex items-center space-x-1">
-                ${m.penaltiesB ? `<span class="text-[9px] font-black text-amber-500">(${m.penaltiesB})</span>` : ''}
+                ${m.penaltiesB !== "" && (m.winner || isShootoutLive) ? `<span class="text-[9px] font-black text-amber-500">(${m.penaltiesB})</span>` : ''}
                 <span class="text-xs font-black text-slate-800 dark:text-white font-mono bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
               </div>
             </div>
+
+            <!-- EGYEDI ÉLŐ JÁTÉKFÁZIS KIJELZŐK -->
+            ${isShootoutLive ? `
+              <div class="mt-2 pt-1.5 border-t border-rose-500/10 text-center animate-pulse">
+                <span class="text-[10px] font-black text-amber-500 tracking-wider font-mono">
+                  ⚡ BÜNTETŐK: ${m.penaltiesA || '0'} – ${m.penaltiesB || '0'}
+                </span>
+              </div>
+            ` : isOvertimeLive ? `
+              <div class="mt-2 pt-1.5 border-t border-rose-500/10 text-center animate-pulse">
+                <span class="text-[10px] font-black text-orange-500 tracking-wider font-sans uppercase">
+                  ⏳ HOSSZABBÍTÁS ZAJLIK
+                </span>
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
@@ -524,6 +544,11 @@
                       const isDawn = realDate.hour < 6;
                       const isAWinner = m.winner && m.winner === m.teamA;
                       const isBWinner = m.winner && m.winner === m.teamB;
+
+                      // Tizenegyespárbaj és hosszabbítás élő detektálása
+                      const livePeriod = m.livePeriod !== undefined ? m.livePeriod : 1;
+                      const isShootoutLive = m.isLive && livePeriod === 3;
+                      const isOvertimeLive = m.isLive && livePeriod === 2;
                       
                       return `
                         <div class="relative group">
@@ -541,7 +566,15 @@
                                 <i data-lucide="clock" class="w-3.5 h-3.5 ${m.isLive ? 'text-rose-500 animate-pulse' : 'text-emerald-555'}"></i>
                                 <span>${formattedTime} CEST ${isDawn ? '<span class="text-amber-500 dark:text-amber-400 font-normal text-[10px] ml-1">(másnap hajnalban)</span>' : ''}</span>
                               </span>
-                              ${m.isLive ? `
+                              ${isShootoutLive ? `
+                                <span class="text-amber-500 bg-amber-500/10 px-2.5 py-0.5 rounded-full font-black animate-pulse text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                  ⚡ BÜNTETŐPÁRBAJ ZAJLIK
+                                </span>
+                              ` : isOvertimeLive ? `
+                                <span class="text-orange-500 bg-orange-500/10 px-2.5 py-0.5 rounded-full font-black animate-pulse text-[10px] uppercase tracking-wider flex items-center gap-1">
+                                  ⏳ HOSSZABBÍTÁS ZAJLIK
+                                </span>
+                              ` : m.isLive ? `
                                 <span class="text-rose-500 bg-rose-500/10 px-2.5 py-0.5 rounded-full font-black animate-pulse text-[10px] uppercase tracking-wider">
                                   🔴 ÉLŐBEN
                                 </span>
@@ -562,7 +595,7 @@
                                   <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-xl text-center min-w-[70px] font-black text-base text-slate-800 dark:text-white shadow-inner">
                                     ${m.scoreA} – ${m.scoreB}
                                   </div>
-                                  ${(m.penaltiesA || m.penaltiesB) ? `
+                                  ${(m.penaltiesA || m.penaltiesB || isShootoutLive) ? `
                                     <span class="text-[10px] text-amber-500 font-black mt-1 font-mono animate-fadeIn">
                                       Büntetőkkel: ${m.penaltiesA || '0'} – ${m.penaltiesB || '0'}
                                     </span>
@@ -685,6 +718,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   ${Object.keys(state.liveState?.bracket || defaultBracketMatches).filter(k => k.startsWith('M')).map(key => {
                     const m = (state.liveState?.bracket || defaultBracketMatches)[key];
+                    const livePeriod = m.livePeriod !== undefined ? m.livePeriod : 1;
+                    const isShootoutLive = m.isLive && livePeriod === 3;
                     const isDraw = m.scoreA !== "" && m.scoreB !== "" && m.scoreA === m.scoreB;
                     
                     return `
@@ -720,15 +755,39 @@
                           </div>
                         </div>
 
-                        <!-- Büntetők -->
-                        ${isDraw ? `
+                        <!-- ÉLŐ JÁTÉKOS IDŐSZAK KAPCSOLÓ (Csak ha a meccs élő!) -->
+                        ${m.isLive ? `
+                          <div class="space-y-1 mt-2 pt-2 border-t border-slate-150 dark:border-slate-800/80">
+                            <label class="block text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">Mérkőzés aktuális fázisa:</label>
+                            <div class="flex bg-white dark:bg-slate-900 p-0.5 rounded-lg border border-slate-200 dark:border-slate-800 text-center">
+                              <button data-match="${m.id}" data-period="1" class="btn-set-period flex-1 py-1 text-[9px] font-bold rounded transition-all ${
+                                livePeriod === 1 
+                                  ? 'bg-rose-500 text-white shadow font-black' 
+                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                              }">Normál</button>
+                              <button data-match="${m.id}" data-period="2" class="btn-set-period flex-1 py-1 text-[9px] font-bold rounded transition-all ${
+                                livePeriod === 2 
+                                  ? 'bg-orange-500 text-white shadow font-black animate-pulse' 
+                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                              }">Hossz.</button>
+                              <button data-match="${m.id}" data-period="3" class="btn-set-period flex-1 py-1 text-[9px] font-bold rounded transition-all ${
+                                livePeriod === 3 
+                                  ? 'bg-amber-500 text-slate-950 shadow font-black animate-bounce' 
+                                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                              }">11-esek</button>
+                            </div>
+                          </div>
+                        ` : ''}
+
+                        <!-- Büntetők bevitele (Ha élő tizenegyespárbaj van, vagy ha korábban befejezett meccsnél volt büntető) -->
+                        ${(isShootoutLive || (m.winner && (m.penaltiesA !== "" || m.penaltiesB !== ""))) ? `
                           <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-slate-150 dark:border-slate-800/80 animate-fadeIn">
                             <div>
-                              <label class="block text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">Büntető (Hazai)</label>
+                              <label class="block text-[9px] text-amber-500 font-bold mb-1">Büntető gól (Hazai)</label>
                               <input type="text" value="${m.penaltiesA || ''}" placeholder="Hazai b." data-match="${m.id}" data-pen-side="A" class="bracket-pen-input w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
                             </div>
                             <div>
-                              <label class="block text-[9px] text-slate-400 dark:text-slate-500 font-bold mb-1">Büntető (Vendég)</label>
+                              <label class="block text-[9px] text-amber-500 font-bold mb-1">Büntető gól (Vendég)</label>
                               <input type="text" value="${m.penaltiesB || ''}" placeholder="Vendég b." data-match="${m.id}" data-pen-side="B" class="bracket-pen-input w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-800 dark:text-white text-center font-mono focus:border-emerald-500 focus:outline-none" />
                             </div>
                           </div>
@@ -823,6 +882,20 @@
         });
       });
 
+      // Játékfázis kapcsoló figyelése (1 = Rendes, 2 = Hossz., 3 = 11-esek)
+      document.querySelectorAll('.btn-set-period').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const matchId = e.currentTarget.dataset.match;
+          const period = parseInt(e.currentTarget.dataset.period);
+
+          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+          if (!state.liveState.bracket) state.liveState.bracket = JSON.parse(JSON.stringify(defaultBracketMatches));
+
+          state.liveState.bracket[matchId].livePeriod = period;
+          render();
+        });
+      });
+
       // Büntető inputok figyelése
       document.querySelectorAll('.bracket-pen-input').forEach(input => {
         input.addEventListener('input', (e) => {
@@ -849,6 +922,7 @@
           state.liveState.bracket[matchId].isLive = currentLiveState;
           if (currentLiveState) {
             state.liveState.bracket[matchId].winner = "";
+            state.liveState.bracket[matchId].livePeriod = 1; // Alapértelmezett: Normál játékidő indításkor
           }
           render();
         });
@@ -1033,6 +1107,7 @@
                       data.bracket[key].isLive = data.bracket[key].isLive !== undefined ? data.bracket[key].isLive : false;
                       data.bracket[key].penaltiesA = data.bracket[key].penaltiesA !== undefined ? data.bracket[key].penaltiesA : "";
                       data.bracket[key].penaltiesB = data.bracket[key].penaltiesB !== undefined ? data.bracket[key].penaltiesB : "";
+                      data.bracket[key].livePeriod = data.bracket[key].livePeriod !== undefined ? data.bracket[key].livePeriod : 1;
                     }
                   }
                 }
