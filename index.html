@@ -85,37 +85,37 @@
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
       M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamA" },
-      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "2", scoreB: "2", winner: "Németország", isLive: false, penaltiesA: "4", penaltiesB: "3", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
-      M75: { id: "M75", date: "jún 30.", time: "23:00", datetime: "2026-06-30T23:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
-      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "1", scoreB: "1", winner: "Marokkó", isLive: false, penaltiesA: "3", penaltiesB: "4", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
+      M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "1", scoreB: "1", winner: "Paraguay", isLive: false, penaltiesA: "3", penaltiesB: "4", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
+      M75: { id: "M75", date: "jún 30.", time: "23:00", datetime: "2026-06-30T23:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "3", scoreB: "0", winner: "Franciaország", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" },
+      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "1", scoreB: "1", winner: "Marokkó", isLive: false, penaltiesA: "2", penaltiesB: "3", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
       M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "1", scoreB: "2", winner: "Norvégia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" },
       M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
       M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamA" },
-      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" },
+      M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "2", scoreB: "0", winner: "Mexikó", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
 
       // JOBB ÁG (Right Bracket) - Legjobb 32
-      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "1", scoreB: "0", winner: "Anglia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamA" },
+      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "1", scoreB: "0", winner: "Anglia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" }, // JAVÍTVA: Anglia -> M91 Mexikó ellen!
       M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamB" },
-      M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamA" },
+      M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamA" },
       M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamB" },
-      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamA" },
-      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamB" },
-      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamA" },
-      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamB" },
+      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamA" },
+      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamA" },
+      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamB" },
+      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamB" },
 
       // NYOLCADDÖNTŐK (Round of 16)
-      M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Nyertes M75", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamA" },
-      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Németország", teamB: "Nyertes M80", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" },
-      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Marokkó", teamB: "Nyertes M78", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
+      M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamA" },
+      M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Paraguay", teamB: "Franciaország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" },
+      M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Mexikó", teamB: "Anglia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
       M92: { id: "M92", date: "júl 5.", time: "01:00 (júl. 6.)", datetime: "2026-07-06T01:00", venue: "Atlanta", teamA: "Brazília", teamB: "Norvégia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamB" },
-      M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", venue: "Boston", teamA: "Anglia", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamA" },
-      M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", venue: "Philadelphia", teamA: "Nyertes M83", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamB" },
-      M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M85", teamB: "Nyertes M86", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamA" },
-      M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", venue: "Vancouver", teamA: "Nyertes M87", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamB" },
+      M93: { id: "M93", date: "júl 6.", time: "19:00", datetime: "2026-07-06T19:00", venue: "Boston", teamA: "Nyertes M83", teamB: "Nyertes M82", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamA" },
+      M94: { id: "M94", date: "júl 6.", time: "02:00 (júl. 7.)", datetime: "2026-07-07T02:00", venue: "Philadelphia", teamA: "Nyertes M85", teamB: "Nyertes M84", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M99", slot: "teamB" },
+      M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M86", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamA" },
+      M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", venue: "Vancouver", teamA: "Nyertes M78", teamB: "Nyertes M87", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamB" },
 
       // NEGYEDDÖNTŐK (Quarterfinals)
       M97: { id: "M97", date: "júl 9.", time: "02:00 (júl. 10.)", datetime: "2026-07-10T02:00", venue: "Boston", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamA" },
-      M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", venue: "Los Angeles", teamA: "Nyertes m91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamB" },
+      M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", venue: "Los Angeles", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamB" },
       M99: { id: "M99", date: "júl 10.", time: "03:00 (júl. 11.)", datetime: "2026-07-11T03:00", venue: "Dallas", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamA" },
       M100: { id: "M100", date: "júl 11.", time: "07:00 (júl. 12.)", datetime: "2026-07-12T07:00", venue: "Miami", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamB" },
 
@@ -123,11 +123,12 @@
       M101: { id: "M101", date: "júl 14.", time: "19:00", datetime: "2026-07-14T19:00", venue: "New York/NJ", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamA" },
       M102: { id: "M102", date: "júl 15.", time: "19:00", datetime: "2026-07-15T19:00", venue: "Atlanta", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamB" },
 
-      // DÖNTŐ ÉS BRONZMECCS
+      // DÖNTŐK
       M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 },
       M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 }
     };
 
+    // --- TOVÁBBJUTTATÓ MOTOR SZINKRONIZÁLÁSA ---
     const propagateAllWinners = (bracket) => {
       for (const key in bracket) {
         if (defaultBracketMatches[key]) {
@@ -148,6 +149,7 @@
       }
     };
 
+    // --- ROBUSZTUS IDŐZÓNA-FÜGGETLEN KEZELŐ ---
     const parseDateTimeLocal = (str) => {
       const parts = str.split('T');
       const dateParts = parts[0].split('-');
@@ -209,12 +211,13 @@
       const isAPlaceholder = isPlaceholder(m.teamA);
       const isBPlaceholder = isPlaceholder(m.teamB);
       const livePeriod = m.livePeriod !== undefined ? m.livePeriod : 1;
+      const isShootoutLive = m.isLive && livePeriod === 5;
 
       return `
         <div class="bg-white dark:bg-slate-900 border rounded-xl p-3 shadow-sm dark:shadow-md transition-all duration-200 relative overflow-hidden ${m.isLive ? 'border-rose-500 dark:border-rose-500 ring-1 ring-rose-500/30' : 'border-slate-200 dark:border-slate-800'}">
           <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-100 dark:border-slate-800/50 pb-1">
-            <span>${m.id} • ${m.date} <span class="text-emerald-600 dark:text-emerald-400 ml-1 bg-emerald-500/10 px-1 py-0.5 rounded">${m.time}</span></span>
-            ${m.isLive ? `<span class="text-rose-500 font-black animate-pulse bg-rose-500/10 px-1.5 py-0.5 rounded">${getLivePhaseText(livePeriod)}</span>` : m.winner ? '<span class="text-emerald-500 font-black">VÉGE</span>' : `<span class="truncate max-w-[70px]">${m.venue}</span>`}\n          </div>
+            <span>${m.id} • ${m.date} <span class="text-emerald-600 dark:text-emerald-400 ml-1 bg-emerald-500/10 px-1 py-0.5 rounded font-mono">${m.time}</span></span>
+            ${m.isLive ? `<span class="text-rose-500 font-black animate-pulse bg-rose-500/10 px-1.5 py-0.5 rounded">${getLivePhaseText(livePeriod)}</span>` : m.winner ? '<span class="text-emerald-500 font-black">VÉGE</span>' : `<span class="truncate max-w-[65px]">${m.venue}</span>`}\n          </div>
           <div class="space-y-1.5 relative">
             <div class="flex items-center justify-between p-1.5 rounded-lg ${isASelected ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-50 dark:bg-slate-950/40'}">
               <span class="text-xs truncate max-w-[120px] ${isASelected ? 'text-emerald-600 dark:text-emerald-400 font-black' : isAPlaceholder ? 'text-slate-400 italic' : 'text-slate-800 dark:text-slate-100 font-bold'}">${m.teamA}</span>
@@ -294,9 +297,9 @@
               <div>
                 <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                   <i data-lucide="award" class="text-emerald-500"></i>
-                  <span>Kieséses Szakasz (Összekötött Nemzeti Ágrajz)</span>
+                  <span>Hivatalos Kieséses Ágrajz (FIFA 2026 Modell)</span>
                 </h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">A dobozok közötti nyilak jelzik a csapatok hivatalos továbbjutási útvonalát.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">A dobozcsoportok közötti nyilak a valóságos továbbjutási struktúrát mutatják.</p>
               </div>
               <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 self-start">
                 <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950 shadow-sm' : 'text-slate-500'}">Bal Ág</button>
@@ -306,140 +309,101 @@
             </div>
 
             ${state.bracketTab === 'left' ? `
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-100/40 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900">
-                <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Legjobb 32 (Felső Zóna)</h3>
-                  <div class="flex flex-col space-y-3">
+              <div class="flex flex-row space-x-2 md:space-x-6 overflow-x-auto pb-6 scrollbar-thin items-stretch select-none">
+                <div class="flex flex-col justify-between space-y-4 min-w-[200px] sm:min-w-[240px]">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-1">Legjobb 32</div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
                     ${renderBracketCard("M73")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
+                    ${renderBracketCard("M76")}
+                  </div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
+                    ${renderBracketCard("M74")}
                     ${renderBracketCard("M75")}
                   </div>
-                  <div class="h-4"></div>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M74")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
                     ${renderBracketCard("M80")}
+                    ${renderBracketCard("M81")}
                   </div>
-                </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Nyolcaddöntő</h3>
-                  <div class="flex flex-col space-y-24 md:space-y-28">
-                    <div>
-                      ${renderBracketCard("M89")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
-                    <div>
-                      ${renderBracketCard("M90")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Negyeddöntő</h3>
-                  <div class="space-y-4">${renderBracketCard("M97")}</div>
-                </div>
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-100/40 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900 mt-6">
-                <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Legjobb 32 (Alsó Zóna)</h3>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M76")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
-                    ${renderBracketCard("M78")}
-                  </div>
-                  <div class="h-4"></div>
-                  <div class="flex flex-col space-y-3">
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
                     ${renderBracketCard("M79")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
                     ${renderBracketCard("M77")}
                   </div>
                 </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Nyolcaddöntő</h3>
-                  <div class="flex flex-col space-y-24 md:space-y-28">
-                    <div>
-                      ${renderBracketCard("M91")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
-                    <div>
-                      ${renderBracketCard("M92")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
+
+                <div class="hidden md:flex flex-col justify-around items-center text-emerald-500 font-bold w-4">
+                  <div>▶</div><div>▶</div><div>▶</div><div>▶</div>
+                </div>
+
+                <div class="flex flex-col justify-around min-w-[200px] sm:min-w-[240px] py-4">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-4">Nyolcaddöntő</div>
+                  <div class="flex flex-col justify-around h-full space-y-20">
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M89")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M90")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M91")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M92")}</div>
                   </div>
                 </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Negyeddöntő</h3>
-                  <div class="space-y-4">${renderBracketCard("M98")}</div>
+
+                <div class="hidden md:flex flex-col justify-around items-center text-emerald-500 font-bold w-4">
+                  <div>▶</div><div>▶</div>
+                </div>
+
+                <div class="flex flex-col justify-around min-w-[200px] sm:min-w-[240px] py-8">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-4">Negyeddöntő</div>
+                  <div class="flex flex-col justify-around h-full space-y-40">
+                    <div class="p-1.5 rounded-2xl bg-slate-100/20 dark:bg-slate-900/10 border border-slate-200 shadow-sm">${renderBracketCard("M97")}</div>
+                    <div class="p-1.5 rounded-2xl bg-slate-100/20 dark:bg-slate-900/10 border border-slate-200 shadow-sm">${renderBracketCard("M98")}</div>
+                  </div>
                 </div>
               </div>
             ` : ''}
 
             ${state.bracketTab === 'right' ? `
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-100/40 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900 animate-fadeIn">
-                <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Legjobb 32</h3>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M81")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
-                    ${renderBracketCard("M82")}
-                  </div>
-                  <div class="h-4"></div>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M83")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
+              <div class="flex flex-row space-x-2 md:space-x-6 overflow-x-auto pb-6 scrollbar-thin items-stretch select-none">
+                <div class="flex flex-col justify-between space-y-4 min-w-[200px] sm:min-w-[240px]">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-1">Legjobb 32</div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
+                    ${renderBracketCard("M85")}
                     ${renderBracketCard("M84")}
                   </div>
-                </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Nyolcaddöntő</h3>
-                  <div class="flex flex-col space-y-24 md:space-y-28">
-                    <div>
-                      ${renderBracketCard("M93")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
-                    <div>
-                      ${renderBracketCard("M94")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
+                    ${renderBracketCard("M83")}
+                    ${renderBracketCard("M82")}
                   </div>
-                </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Negyeddöntő</h3>
-                  <div class="space-y-4">${renderBracketCard("M99")}</div>
-                </div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center bg-slate-100/40 dark:bg-slate-950 p-4 rounded-3xl border border-slate-200 dark:border-slate-900 mt-6">
-                <div class="space-y-4">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Legjobb 32 (Alsó Zóna)</h3>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M85")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
                     ${renderBracketCard("M86")}
-                  </div>
-                  <div class="h-4"></div>
-                  <div class="flex flex-col space-y-3">
-                    ${renderBracketCard("M87")}
-                    <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs py-0.5">⬇</div>
                     ${renderBracketCard("M88")}
                   </div>
-                </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Nyolcaddöntő</h3>
-                  <div class="flex flex-col space-y-24 md:space-y-28">
-                    <div>
-                      ${renderBracketCard("M95")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
-                    <div>
-                      ${renderBracketCard("M96")}
-                      <div class="flex justify-center text-slate-300 dark:text-slate-700 text-xs pt-4">⬇</div>
-                    </div>
+                  <div class="space-y-3 bg-slate-100/30 dark:bg-slate-900/20 p-2 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-inner">
+                    ${renderBracketCard("M78")}
+                    ${renderBracketCard("M87")}
                   </div>
                 </div>
-                <div class="space-y-4 md:pt-6">
-                  <h3 class="text-[10px] text-slate-400 uppercase tracking-widest text-center border-b border-slate-200 dark:border-slate-900 pb-1.5 font-bold">Negyeddöntő</h3>
-                  <div class="space-y-4">${renderBracketCard("M100")}</div>
+
+                <div class="hidden md:flex flex-col justify-around items-center text-emerald-500 font-bold w-4">
+                  <div>▶</div><div>▶</div><div>▶</div><div>▶</div>
+                </div>
+
+                <div class="flex flex-col justify-around min-w-[200px] sm:min-w-[240px] py-4">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-4">Nyolcaddöntő</div>
+                  <div class="flex flex-col justify-around h-full space-y-20">
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M93")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M94")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M95")}</div>
+                    <div class="p-1 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">${renderBracketCard("M96")}</div>
+                  </div>
+                </div>
+
+                <div class="hidden md:flex flex-col justify-around items-center text-emerald-500 font-bold w-4">
+                  <div>▶</div><div>▶</div>
+                </div>
+
+                <div class="flex flex-col justify-around min-w-[200px] sm:min-w-[240px] py-8">
+                  <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-2 mb-4">Negyeddöntő</div>
+                  <div class="flex flex-col justify-around h-full space-y-40">
+                    <div class="p-1.5 rounded-2xl bg-slate-100/20 dark:bg-slate-900/10 border border-slate-200 shadow-sm">${renderBracketCard("M99")}</div>
+                    <div class="p-1.5 rounded-2xl bg-slate-100/20 dark:bg-slate-900/10 border border-slate-200 shadow-sm">${renderBracketCard("M100")}</div>
+                  </div>
                 </div>
               </div>
             ` : ''}
@@ -455,15 +419,15 @@
                   </div>
                   <div class="hidden md:flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
                     <i data-lucide="chevron-right" class="w-8 h-8 text-emerald-500 animate-pulse"></i>
-                    <span class="text-[10px] font-bold uppercase tracking-wider mt-2">Aranyért</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider mt-2">Finálé</span>
                   </div>
                   <div class="space-y-8">
                     <div>
-                      <h3 class="text-xs text-amber-500 uppercase tracking-widest text-center font-bold border-b pb-1.5 mb-2">Döntő</h3>
+                      <h3 class="text-xs text-amber-500 uppercase tracking-widest text-center font-bold border-b pb-1.5 mb-2">Aranyéremért</h3>
                       ${renderBracketCard("M104")}
                     </div>
                     <div>
-                      <h3 class="text-xs text-slate-400 uppercase tracking-widest text-center font-bold border-b pb-1.5 mb-2">Bronzmeccs</h3>
+                      <h3 class="text-xs text-slate-400 uppercase tracking-widest text-center font-bold border-b pb-1.5 mb-2">Bronzmérkőzés</h3>
                       ${renderBracketCard("M103")}
                     </div>
                   </div>
@@ -613,8 +577,8 @@
                           <div class="space-y-1 mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
                             <label class="block text-[9px] font-bold text-slate-400">Élő fázis (5 fázisú kapcsoló):</label>
                             <div class="grid grid-cols-5 gap-0.5 bg-slate-200 dark:bg-slate-900 p-0.5 rounded-lg text-center text-[8px] font-bold">
-                              <button data-match="${m.id}" data-period="1" class="btn-set-period py-1 rounded ${livePeriod === 1 ? 'bg-rose-500 text-white font-black' : 'text-slate-500'}">1.Félidő</button>
-                              <button data-match="${m.id}" data-period="2" class="btn-set-period py-1 rounded ${livePeriod === 2 ? 'bg-rose-500 text-white font-black' : 'text-slate-500'}">2.Félidő</button>
+                              <button data-match="${m.id}" data-period="1" class="btn-set-period py-1 rounded ${livePeriod === 1 ? 'bg-rose-500 text-white font-black' : 'text-slate-500'}">1.Fél</button>
+                              <button data-match="${m.id}" data-period="2" class="btn-set-period py-1 rounded ${livePeriod === 2 ? 'bg-rose-500 text-white font-black' : 'text-slate-500'}">2.Fél</button>
                               <button data-match="${m.id}" data-period="3" class="btn-set-period py-1 rounded ${livePeriod === 3 ? 'bg-orange-500 text-white font-black' : 'text-slate-500'}">Hossz.1</button>
                               <button data-match="${m.id}" data-period="4" class="btn-set-period py-1 rounded ${livePeriod === 4 ? 'bg-orange-500 text-white font-black' : 'text-slate-500'}">Hossz.2</button>
                               <button data-match="${m.id}" data-period="5" class="btn-set-period py-1 rounded ${livePeriod === 5 ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-500'}">11-esek</button>
@@ -629,7 +593,7 @@
                           </div>
                         ` : ''}
 
-                        <button data-match="${m.id}" class="btn-toggle-live w-full py-1 rounded text-[10px] font-bold mt-2 ${m.isLive ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-200 dark:bg-slate-900 text-slate-600'}\">
+                        <button data-match="${m.id}" class="btn-toggle-live w-full py-1 rounded text-[10px] font-bold mt-2 ${m.isLive ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-200 dark:bg-slate-900 text-slate-600'}">
                           <span>${m.isLive ? '🔴 Élő közvetítés leállítása' : '🎬 Élő közvetítés indítása'}</span>
                         </button>
                       </div>
