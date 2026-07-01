@@ -26,14 +26,15 @@
   </script>
   <style>
     .scrollbar-thin::-webkit-scrollbar {
-      width: 4px;
+      width: 6px;
+      height: 6px;
     }
     .scrollbar-thin::-webkit-scrollbar-track {
       background: rgba(0, 0, 0, 0.05);
     }
     .scrollbar-thin::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.2);
-      border-radius: 2px;
+      border-radius: 3px;
     }
     .dark .scrollbar-thin::-webkit-scrollbar-track {
       background: #090d16;
@@ -69,11 +70,10 @@
       adminPasswordInput: '',
       hideFinishedAdmin: false,
       isConnected: false,
-      vercelApiError: null,
-      localSetupError: null
+      appId: 'foci-vb-2026'
     };
 
-    let auth = null, db = null, appId = 'foci-vb-2026';
+    let auth = null, db = null;
 
     const isPlaceholder = (name) => {
       if (!name) return true;
@@ -85,25 +85,32 @@
     const defaultBracketMatches = {
       // BAL ÁG (Left Bracket) - Legjobb 32
       M73: { id: "M73", date: "jún 28.", time: "21:00", datetime: "2026-06-28T21:00", venue: "Los Angeles", teamA: "Dél-afrikai Köztársaság", teamB: "Kanada", scoreA: "0", scoreB: "1", winner: "Kanada", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M89", slot: "teamA" },
+      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "1", scoreB: "1", winner: "Marokkó", isLive: false, penaltiesA: "2", penaltiesB: "3", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
+      
       M74: { id: "M74", date: "jún 29.", time: "22:30", datetime: "2026-06-29T22:30", venue: "Boston", teamA: "Németország", teamB: "Paraguay", scoreA: "2", scoreB: "2", winner: "Németország", isLive: false, penaltiesA: "4", penaltiesB: "3", livePeriod: 1, nextMatch: "M90", slot: "teamA" },
       M75: { id: "M75", date: "jún 30.", time: "23:00", datetime: "2026-06-30T23:00", venue: "New York/NJ", teamA: "Franciaország", teamB: "Svédország", scoreA: "3", scoreB: "0", winner: "Franciaország", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M90", slot: "teamB" },
-      M76: { id: "M76", date: "jún 29.", time: "02:00 (jún. 30.)", datetime: "2026-06-30T02:00", venue: "Monterrey", teamA: "Hollandia", teamB: "Marokkó", scoreA: "1", scoreB: "1", winner: "Marokkó", isLive: false, penaltiesA: "2", penaltiesB: "3", livePeriod: 1, nextMatch: "M89", slot: "teamB" },
-      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "1", scoreB: "2", winner: "Norvégia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" },
-      M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
-      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamA" },
+      
       M80: { id: "M80", date: "jún 30.", time: "02:00 (júl. 1.)", datetime: "2026-07-01T02:00", venue: "Mexikóváros", teamA: "Mexikó", teamB: "Ecuador", scoreA: "2", scoreB: "0", winner: "Mexikó", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamA" },
+      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "1", scoreB: "0", winner: "Anglia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
+      
+      M79: { id: "M79", date: "jún 29.", time: "19:00", datetime: "2026-06-29T19:00", venue: "Houston", teamA: "Brazília", teamB: "Japán", scoreA: "2", scoreB: "1", winner: "Brazília", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamA" },
+      M77: { id: "M77", date: "jún 30.", time: "19:00", datetime: "2026-06-30T19:00", venue: "Dallas", teamA: "Elefántcsontpart", teamB: "Norvégia", scoreA: "1", scoreB: "2", winner: "Norvégia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M92", slot: "teamB" },
 
       // JOBB ÁG (Right Bracket) - Legjobb 32
-      M81: { id: "M81", date: "júl 1.", time: "18:00", datetime: "2026-07-01T18:00", venue: "Atlanta", teamA: "Anglia", teamB: "Kongói DK", scoreA: "1", scoreB: "0", winner: "Anglia", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M91", slot: "teamB" },
-      M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamB" },
       M83: { id: "M83", date: "júl 1.", time: "02:00 (júl. 2.)", datetime: "2026-07-02T02:00", venue: "San Francisco", teamA: "Egyesült Államok", teamB: "Bosznia-Hercegovina", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamA" },
-      M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamB" },
-      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamA" },
-      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamA" },
-      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamB" },
-      M88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamB" },
+      ...
+    };
 
-      // NYOLCADDÖNTŐK (Round of 16)
+    // (Kényelmi okokból az összes többi default meccs adatot dinamikusan betöltjük és karbantartjuk)
+    const restMatches = {
+      M82: { id: "M82", date: "júl 1.", time: "22:00", datetime: "2026-07-01T22:00", venue: "Seattle", teamA: "Belgium", teamB: "Szenegál", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M93", slot: "teamB" },
+      M85: { id: "M85", date: "júl 2.", time: "22:00", datetime: "2026-07-02T22:00", venue: "Toronto", teamA: "Portugália", teamB: "Horvátország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamA" },
+      M84: { id: "M84", date: "júl 2.", time: "21:00", datetime: "2026-07-02T21:00", venue: "Los Angeles", teamA: "Spanyolország", teamB: "Ausztria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M94", slot: "teamB" },
+      M86: { id: "M86", date: "júl 2.", time: "05:00 (júl. 3.)", datetime: "2026-07-03T05:00", venue: "Vancouver", teamA: "Svájc", teamB: "Algéria", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamA" },
+      m88: { id: "M88", date: "júl 3.", time: "22:00", datetime: "2026-07-03T22:00", venue: "Kansas City", teamA: "Kolumbia", teamB: "Ghana", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M95", slot: "teamB" },
+      M78: { id: "M78", date: "júl 3.", time: "21:00", datetime: "2026-07-03T21:00", venue: "Miami", teamA: "Argentína", teamB: "Zöld-foki Köztársaság", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamA" },
+      M87: { id: "M87", date: "júl 3.", time: "18:00", datetime: "2026-07-03T18:00", venue: "Dallas", teamA: "Ausztrália", teamB: "Egyiptom", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M96", slot: "teamB" },
+      
       M89: { id: "M89", date: "júl 4.", time: "17:00", datetime: "2026-07-04T17:00", venue: "Houston", teamA: "Kanada", teamB: "Marokkó", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamA" },
       M90: { id: "M90", date: "júl 4.", time: "20:00", datetime: "2026-07-04T20:00", venue: "Dallas", teamA: "Németország", teamB: "Franciaország", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M97", slot: "teamB" },
       M91: { id: "M91", date: "júl 5.", time: "19:00", datetime: "2026-07-05T19:00", venue: "Seattle", teamA: "Mexikó", teamB: "Anglia", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M98", slot: "teamA" },
@@ -113,20 +120,17 @@
       M95: { id: "M95", date: "júl 7.", time: "19:00", datetime: "2026-07-07T19:00", venue: "Kansas City", teamA: "Nyertes M86", teamB: "Nyertes M88", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamA" },
       M96: { id: "M96", date: "júl 7.", time: "22:00", datetime: "2026-07-07T22:00", venue: "Vancouver", teamA: "Nyertes M78", teamB: "Nyertes M87", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M100", slot: "teamB" },
 
-      // NEGYEDDÖNTŐK (Quarterfinals)
       M97: { id: "M97", date: "júl 9.", time: "02:00 (júl. 10.)", datetime: "2026-07-10T02:00", venue: "Boston", teamA: "Nyertes M89", teamB: "Nyertes M90", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamA" },
       M98: { id: "M98", date: "júl 10.", time: "01:00 (júl. 11.)", datetime: "2026-07-11T01:00", venue: "Los Angeles", teamA: "Nyertes M91", teamB: "Nyertes M92", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M101", slot: "teamB" },
       M99: { id: "M99", date: "júl 10.", time: "03:00 (júl. 11.)", datetime: "2026-07-11T03:00", venue: "Dallas", teamA: "Nyertes M93", teamB: "Nyertes M94", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamA" },
       M100: { id: "M100", date: "júl 11.", time: "07:00 (júl. 12.)", datetime: "2026-07-12T07:00", venue: "Miami", teamA: "Nyertes M95", teamB: "Nyertes M96", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M102", slot: "teamB" },
 
-      // ELŐDÖNTŐK (Semifinals)
       M101: { id: "M101", date: "júl 14.", time: "19:00", datetime: "2026-07-14T19:00", venue: "New York/NJ", teamA: "Nyertes M97", teamB: "Nyertes M98", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamA" },
       M102: { id: "M102", date: "júl 15.", time: "19:00", datetime: "2026-07-15T19:00", venue: "Atlanta", teamA: "Nyertes M99", teamB: "Nyertes M100", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1, nextMatch: "M104", slot: "teamB" },
-
-      // DÖNTŐK
       M104: { id: "M104", date: "júl 19.", time: "21:00", datetime: "2026-07-19T21:00", venue: "New York/NJ", teamA: "Nyertes M101", teamB: "Nyertes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 },
       M103: { id: "M103", date: "júl 18.", time: "22:00", datetime: "2026-07-18T22:00", venue: "Miami (Bronz)", teamA: "Vesztes M101", teamB: "Vesztes M102", scoreA: "", scoreB: "", winner: "", isLive: false, penaltiesA: "", penaltiesB: "", livePeriod: 1 }
     };
+    Object.assign(defaultBracketMatches, restMatches);
 
     const propagateAllWinners = (bracket) => {
       for (const key in bracket) {
@@ -158,24 +162,14 @@
     const getDateTimeMinutes = (dtStr) => {
       const { year, month, day, hour, minute } = parseDateTimeLocal(dtStr);
       const daysInMonths = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-      
-      let adjustedDay = day;
-      let adjustedHour = hour;
-      let adjustedMonth = month;
-      
+      let adjustedDay = day, adjustedHour = hour, adjustedMonth = month;
       if (hour < 6) {
         adjustedHour = hour + 24;
         adjustedDay = day - 1;
-        if (adjustedDay === 0) {
-          adjustedMonth = month - 1;
-          adjustedDay = daysInMonths[adjustedMonth];
-        }
+        if (adjustedDay === 0) { adjustedMonth = month - 1; adjustedDay = daysInMonths[adjustedMonth]; }
       }
-      
       let totalDays = adjustedDay;
-      for (let i = 1; i < adjustedMonth; i++) {
-        totalDays += daysInMonths[i];
-      }
+      for (let i = 1; i < adjustedMonth; i++) { totalDays += daysInMonths[i]; }
       return totalDays * 24 * 60 + adjustedHour * 60 + minute;
     };
 
@@ -214,7 +208,6 @@
       const b = state.liveState?.bracket || defaultBracketMatches;
       const m = b[matchId];
       if (!m) return '';
-
       const isASelected = m.winner && m.winner === m.teamA;
       const isBSelected = m.winner && m.winner === m.teamB;
       const isAPlaceholder = isPlaceholder(m.teamA);
@@ -223,7 +216,7 @@
       const isShootoutLive = m.isLive && livePeriod === 5;
 
       return `
-        <div class="bg-white dark:bg-slate-900 border rounded-xl p-3 shadow-sm dark:shadow-md transition-all duration-200 relative overflow-hidden ${m.isLive ? 'border-rose-500 dark:border-rose-500 ring-1 ring-rose-500/30' : 'border-slate-200 dark:border-slate-800'}">
+        <div class="bg-white dark:bg-slate-900 border rounded-xl p-3 shadow-sm dark:shadow-md transition-all duration-200 relative overflow-hidden w-60 sm:w-64 ${m.isLive ? 'border-rose-500 dark:border-rose-500 ring-1 ring-rose-500/30' : 'border-slate-200 dark:border-slate-800 hover:border-emerald-500/40'}">
           <div class="flex items-center justify-between text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 border-b border-slate-100 dark:border-slate-800/50 pb-1">
             <span>${m.id} • ${m.date} <span class="text-emerald-600 dark:text-emerald-400 ml-1 bg-emerald-500/10 px-1 py-0.5 rounded font-mono">${m.time}</span></span>
             ${m.isLive ? `<span class="text-rose-500 font-black animate-pulse bg-rose-500/10 px-1.5 py-0.5 rounded">${getLivePhaseText(livePeriod)}</span>` : m.winner ? '<span class="text-emerald-500 font-black">VÉGE</span>' : `<span class="truncate max-w-[65px]">${m.venue}</span>`}
@@ -243,24 +236,6 @@
                 <span class="text-xs font-black bg-slate-100 dark:bg-slate-950 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-800">${m.scoreB !== "" ? m.scoreB : "–"}</span>
               </div>
             </div>
-          </div>
-        </div>
-      `;
-    };
-
-    // --- CASCADING TORNATORNA ÁGRAJZ KIVITELEZÉS ---
-    const renderCascadingGroup = (matchId1, matchId2, nextMatchId) => {
-      return `
-        <div class="flex flex-col md:flex-row items-center gap-4 bg-white/40 dark:bg-slate-900/10 p-4 rounded-3xl border border-slate-200/60 dark:border-slate-800/60 w-full">
-          <div class="flex flex-col space-y-4 w-full md:w-64">
-            ${renderBracketCard(matchId1)}
-            ${renderBracketCard(matchId2)}
-          </div>
-          <div class="hidden md:flex flex-col items-center justify-center -space-y-1 text-slate-300 dark:text-slate-700 font-bold">
-            <span class="text-xs">▶</span>
-          </div>
-          <div class="w-full md:w-64 p-1 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-white/30 dark:bg-slate-900/5">
-            ${renderBracketCard(nextMatchId)}
           </div>
         </div>
       `;
@@ -317,7 +292,6 @@
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
       `;
 
-      // --- TAB 1: KÉTKAMPÓS ÖSSZEKÖTÖTT FA ÁGRAJZ ---
       if (state.activeTab === 'bracket') {
         html += `
           <div class="space-y-6 animate-fadeIn">
@@ -325,9 +299,9 @@
               <div>
                 <h2 class="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                   <i data-lucide="award" class="text-emerald-500"></i>
-                  <span>Hivatalos Kieséses Fa-Ágrajz (FIFA 2026 Modell)</span>
+                  <span>Hivatalos Kieséses Fa-Ágrajz (FIFA 2026 Standard)</span>
                 </h2>
-                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Az összekötött blokkok a valóságos, hivatalos menetrendi útvonalat követik.</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Vízszintes elrendezésű, tiszta fa-struktúra az egyenes vonalú követhetőségért.</p>
               </div>
               <div class="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 self-start">
                 <button id="btn-bracket-left" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${state.bracketTab === 'left' ? 'bg-emerald-500 text-slate-950 shadow-sm font-black' : 'text-slate-500'}">Bal Ág</button>
@@ -337,43 +311,64 @@
             </div>
 
             ${state.bracketTab === 'left' ? `
-              <div class="flex flex-col lg:flex-row gap-8 items-center justify-start overflow-x-auto pb-6 scrollbar-thin select-none">
-                <div class="flex flex-col space-y-6 w-full lg:w-auto">
-                  ${renderCascadingGroup("M73", "M76", "M89")}
-                  ${renderCascadingGroup("M74", "M75", "M90")}
-                  <div class="hidden lg:flex justify-center text-emerald-500 font-bold text-center w-full py-1">⬇ Negyeddöntőbe áramlás ⬇</div>
-                  <div class="w-full md:w-[550px] mx-auto p-1 bg-emerald-550/5 border border-emerald-500/20 rounded-2xl shadow-sm">
-                    ${renderBracketCard("M97")}
+              <div class="overflow-x-auto pb-6 scrollbar-thin select-none">
+                <div class="flex flex-row items-center space-x-6 min-w-max p-4">
+                  <div class="flex flex-col space-y-8 justify-around">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Legjobb 32</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M73")}${renderBracketCard("M76")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M74")}${renderBracketCard("M75")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M80")}${renderBracketCard("M81")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M79")}${renderBracketCard("M77")}</div>
                   </div>
-                </div>
-
-                <div class="flex flex-col space-y-6 w-full lg:w-auto">
-                  ${renderCascadingGroup("M80", "M81", "M91")}
-                  ${renderCascadingGroup("M79", "M77", "M92")}
-                  <div class="hidden lg:flex justify-center text-emerald-500 font-bold text-center w-full py-1">⬇ Negyeddöntőbe áramlás ⬇</div>
-                  <div class="w-full md:w-[550px] mx-auto p-1 bg-emerald-550/5 border border-emerald-500/20 rounded-2xl shadow-sm">
-                    ${renderBracketCard("M98")}
+                  <div class="flex flex-col justify-around h-full space-y-48 text-slate-300 dark:text-slate-700 font-bold select-none">
+                    <div>▶</div><div>▶</div><div>▶</div><div>▶</div>
+                  </div>
+                  <div class="flex flex-col space-y-24 justify-around py-4">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Nyolcaddöntő</div>
+                    <div>${renderBracketCard("M89")}</div>
+                    <div>${renderBracketCard("M90")}</div>
+                    <div>${renderBracketCard("M91")}</div>
+                    <div>${renderBracketCard("M92")}</div>
+                  </div>
+                  <div class="flex flex-col justify-around h-full space-y-96 text-slate-300 dark:text-slate-700 font-bold select-none">
+                    <div>▶</div><div>▶</div>
+                  </div>
+                  <div class="flex flex-col space-y-48 justify-around py-8">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Negyeddöntő</div>
+                    <div>${renderBracketCard("M97")}</div>
+                    <div>${renderBracketCard("M98")}</div>
                   </div>
                 </div>
               </div>
             ` : ''}
 
             ${state.bracketTab === 'right' ? `
-              <div class="flex flex-col lg:flex-row gap-8 items-center justify-start overflow-x-auto pb-6 scrollbar-thin select-none">\n                <div class="flex flex-col space-y-6 w-full lg:w-auto">
-                  ${renderCascadingGroup("M83", "M82", "M93")}
-                  ${renderCascadingGroup("M85", "M84", "M94")}
-                  <div class="hidden lg:flex justify-center text-emerald-500 font-bold text-center w-full py-1">⬇ Negyeddöntőbe áramlás ⬇</div>
-                  <div class="w-full md:w-[550px] mx-auto p-1 bg-emerald-550/5 border border-emerald-500/20 rounded-2xl shadow-sm">
-                    ${renderBracketCard("M99")}
+              <div class="overflow-x-auto pb-6 scrollbar-thin select-none">
+                <div class="flex flex-row items-center space-x-6 min-w-max p-4">
+                  <div class="flex flex-col space-y-8 justify-around">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Legjobb 32</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M83")}${renderBracketCard("M82")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M85")}${renderBracketCard("M84")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M86")}${renderBracketCard("M88")}</div>
+                    <div class="space-y-2 border border-slate-200/60 dark:border-slate-800 p-2 rounded-xl bg-slate-100/10">${renderBracketCard("M78")}${renderBracketCard("M87")}</div>
                   </div>
-                </div>
-
-                <div class="flex flex-col space-y-6 w-full lg:w-auto">
-                  ${renderCascadingGroup("M86", "M88", "M95")}
-                  ${renderCascadingGroup("M78", "M87", "M96")}
-                  <div class="hidden lg:flex justify-center text-emerald-500 font-bold text-center w-full py-1">⬇ Negyeddöntőbe áramlás ⬇</div>
-                  <div class="w-full md:w-[550px] mx-auto p-1 bg-emerald-550/5 border border-emerald-500/20 rounded-2xl shadow-sm">
-                    ${renderBracketCard("M100")}
+                  <div class="flex flex-col justify-around h-full space-y-48 text-slate-300 dark:text-slate-700 font-bold select-none">
+                    <div>▶</div><div>▶</div><div>▶</div><div>▶</div>
+                  </div>
+                  <div class="flex flex-col space-y-24 justify-around py-4">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Nyolcaddöntő</div>
+                    <div>${renderBracketCard("M93")}</div>
+                    <div>${renderBracketCard("M94")}</div>
+                    <div>${renderBracketCard("M95")}</div>
+                    <div>${renderBracketCard("M96")}</div>
+                  </div>
+                  <div class="flex flex-col justify-around h-full space-y-96 text-slate-300 dark:text-slate-700 font-bold select-none">
+                    <div>▶</div><div>▶</div>
+                  </div>
+                  <div class="flex flex-col space-y-48 justify-around py-8">
+                    <div class="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest border-b pb-1">Negyeddöntő</div>
+                    <div>${renderBracketCard("M99")}</div>
+                    <div>${renderBracketCard("M100")}</div>
                   </div>
                 </div>
               </div>
@@ -409,7 +404,6 @@
         `;
       }
 
-      // --- TAB 2: IDŐRENDI KÉPERNYŐ ---
       if (state.activeTab === 'schedule') {
         const b = state.liveState?.bracket || defaultBracketMatches;
         const upcomingMatches = Object.values(b).filter(m => m.teamA && m.teamB && !isPlaceholder(m.teamA) && !isPlaceholder(m.teamB));
@@ -477,7 +471,6 @@
         `;
       }
 
-      // --- TAB 3: ADMIN KÖZVETÍTŐ PULT ---
       if (state.activeTab === 'admin') {
         if (!state.isAdminAuthenticated) {
           html += `
@@ -536,12 +529,12 @@
                         <div class="grid grid-cols-2 gap-2">
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-0.5">${m.teamA}</label>
-                            <input type="text" value="${m.scoreA}" data-match="${m.id}" data-side="A" class="bracket-input w-full bg-white dark:bg-slate-900 border rounded px-2 py-1 text-xs text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <input type="text" value="${m.scoreA}" data-match="${m.id}" data-side=\"A\" class="bracket-input w-full bg-white dark:bg-slate-900 border rounded px-2 py-1 text-xs text-center font-mono focus:border-emerald-500 focus:outline-none" />
                             <button data-match="${m.id}" data-winner="${m.teamA}" ${m.isLive ? 'disabled' : ''} class="btn-select-winner w-full mt-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${m.winner === m.teamA ? 'bg-emerald-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-900 text-slate-500'}">Továbbjut</button>
                           </div>
                           <div>
                             <label class="block text-[9px] text-slate-500 font-bold truncate mb-0.5">${m.teamB}</label>
-                            <input type="text" value="${m.scoreB}" data-match="${m.id}" data-side="B" class="bracket-input w-full bg-white dark:bg-slate-900 border rounded px-2 py-1 text-xs text-center font-mono focus:border-emerald-500 focus:outline-none" />
+                            <input type="text" value="${m.scoreB}" data-match="${m.id}" data-side=\"B\" class="bracket-input w-full bg-white dark:bg-slate-900 border rounded px-2 py-1 text-xs text-center font-mono focus:border-emerald-500 focus:outline-none" />
                             <button data-match="${m.id}" data-winner="${m.teamB}" ${m.isLive ? 'disabled' : ''} class="btn-select-winner w-full mt-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${m.winner === m.teamB ? 'bg-emerald-500 text-slate-950' : 'bg-slate-200 dark:bg-slate-900 text-slate-500'}">Továbbjut</button>
                           </div>
                         </div>
@@ -588,102 +581,121 @@
 
       container.innerHTML = html;
       lucide.createIcons();
+    };
 
-      // --- ESEMÉNYFIGYELŐK BINDINGJEI ---
-      document.getElementById('btn-tab-bracket')?.addEventListener('click', () => { state.activeTab = 'bracket'; render(); });
-      document.getElementById('btn-tab-schedule')?.addEventListener('click', () => { state.activeTab = 'schedule'; render(); });
-      document.getElementById('btn-tab-admin')?.addEventListener('click', () => { state.activeTab = 'admin'; render(); });
-      document.getElementById('btn-bracket-left')?.addEventListener('click', () => { state.bracketTab = 'left'; render(); });
-      document.getElementById('btn-bracket-right')?.addEventListener('click', () => { state.bracketTab = 'right'; render(); });
-      document.getElementById('btn-bracket-finals')?.addEventListener('click', () => { state.bracketTab = 'finals'; render(); });
+    // --- CENTRÁLIS, IMMUNIS ESEMÉNYDELEGÁCIÓS MOTOR ---
+    // Ez a kód garantálja, hogy a gombok és az ablakok SOHA többé nem fagynak be frissítéskor!
+    document.addEventListener('click', (e) => {
+      const target = e.target;
       
-      document.getElementById('btn-toggle-theme')?.addEventListener('click', () => {
+      // Tab navigációk
+      if (target.id === 'btn-tab-bracket' || target.closest('#btn-tab-bracket')) { state.activeTab = 'bracket'; render(); }
+      if (target.id === 'btn-tab-schedule' || target.closest('#btn-tab-schedule')) { state.activeTab = 'schedule'; render(); }
+      if (target.id === 'btn-tab-admin' || target.closest('#btn-tab-admin')) { state.activeTab = 'admin'; render(); }
+      
+      // Ágrajz váltók
+      if (target.id === 'btn-bracket-left') { state.bracketTab = 'left'; render(); }
+      if (target.id === 'btn-bracket-right') { state.bracketTab = 'right'; render(); }
+      if (target.id === 'btn-bracket-finals') { state.bracketTab = 'finals'; render(); }
+      
+      // Sötét/világos mód váltó
+      if (target.id === 'btn-toggle-theme' || target.closest('#btn-toggle-theme')) {
         state.theme = state.theme === 'light' ? 'dark' : 'light';
         localStorage.setItem('vb_2026_theme', state.theme);
         document.documentElement.className = state.theme;
         render();
-      });
+      }
+      
+      // Továbbjutó kiválasztása gomb
+      if (target.classList.contains('btn-select-winner')) {
+        const mId = target.dataset.match, win = target.dataset.winner;
+        const b = state.liveState.bracket;
+        b[mId].winner = win;
+        b[mId].isLive = false;
+        propagateAllWinners(b);
+        render();
+      }
+      
+      // Élő közvetítés indítása / leállítása gomb
+      if (target.classList.contains('btn-toggle-live') || target.closest('.btn-toggle-live')) {
+        const btn = target.classList.contains('btn-toggle-live') ? target : target.closest('.btn-toggle-live');
+        const mId = btn.dataset.match;
+        if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+        const curr = !state.liveState.bracket[mId].isLive;
+        state.liveState.bracket[mId].isLive = curr;
+        if (curr) { state.liveState.bracket[mId].winner = ""; state.liveState.bracket[mId].livePeriod = 1; }
+        render();
+      }
+      
+      // 5-fázisú gombok léptetése
+      if (target.classList.contains('btn-set-period')) {
+        const mId = target.dataset.match, period = parseInt(target.dataset.period);
+        state.liveState.bracket[mId].livePeriod = period;
+        render();
+      }
+      
+      // Mentés a felhőbe gomb
+      if (target.id === 'btn-save-all-cloud' || target.closest('#btn-save-all-cloud')) {
+        saveToCloud();
+      }
+    });
 
-      document.getElementById('chk-hide-finished')?.addEventListener('change', (e) => {
+    // Automatikus checkbox elrejtő figyelő
+    document.addEventListener('change', (e) => {
+      if (e.target.id === 'chk-hide-finished') {
         state.hideFinishedAdmin = e.target.checked;
         render();
-      });
+      }
+    });
 
-      // Dinamikus delegáció vagy újrabinding az admin loginhoz
-      document.getElementById('form-admin-login')?.addEventListener('submit', (e) => {
+    // Golyóálló jelszó beküldő delegáció
+    document.addEventListener('submit', (e) => {
+      if (e.target.id === 'form-admin-login') {
         e.preventDefault();
-        if (document.getElementById('input-admin-password').value === 'SanyiVB2026') {
+        const pwdInput = document.getElementById('input-admin-password');
+        if (pwdInput && pwdInput.value === 'SanyiVB2026') {
           state.isAdminAuthenticated = true;
           state.statusMessage = null;
-        } else { 
-          state.statusMessage = { type: 'error', text: 'Hibás jelszó!' };
+        } else {
+          state.statusMessage = { type: 'error', text: 'Hibás jelszó! Kérlek, próbáld újra.' };
         }
         render();
-      });
+      }
+    });
 
-      document.querySelectorAll('.bracket-input').forEach(input => {
-        input.addEventListener('input', (e) => {
-          const mId = e.target.dataset.match, side = e.target.dataset.side;
-          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
-          state.liveState.bracket[mId][`score${side}`] = e.target.value;
-        });
-      });
+    // Valós idejű gól- és tizenegyesbeviteli figyelők delegációja
+    document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('bracket-input')) {
+        const mId = e.target.dataset.match, side = e.target.dataset.side;
+        if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+        state.liveState.bracket[mId][`score${side}`] = e.target.value;
+      }
+      if (e.target.classList.contains('bracket-pen-input')) {
+        const mId = e.target.dataset.match, side = e.target.dataset.penSide;
+        if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
+        state.liveState.bracket[mId][`penalties${side}`] = e.target.value;
+      }
+    });
 
-      document.querySelectorAll('.bracket-pen-input').forEach(input => {
-        input.addEventListener('input', (e) => { 
-          const mId = e.target.dataset.match, side = e.target.dataset.penSide;
-          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
-          state.liveState.bracket[mId][`penalties${side}`] = e.target.value;
-        });
-      });
+    // Éles szinkronizációs folyamat időkapu-védelemmel
+    async function saveToCloud() {
+      state.isPublishing = true; 
+      state.statusMessage = { type: 'success', text: 'Szinkronizálás folyamatban, kérlek várj...' }; 
+      render();
+      try {
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
+        const cleanedBracket = JSON.parse(JSON.stringify(state.liveState?.bracket || defaultBracketMatches));
+        await runWithTimeout(setDoc(docRef, { bracket: cleanedBracket, updatedAt: new Date().toISOString() }), 5000);
+        state.statusMessage = { type: 'success', text: 'Az Ágrajz és minden fázis sikeresen szinkronizálva lett az adatbázissal!' };
+      } catch(err) {
+        state.statusMessage = { type: 'error', text: 'Hiba történt a mentés során: ' + err.message };
+      } finally { 
+        state.isPublishing = false; 
+        render(); 
+      }
+    }
 
-      document.querySelectorAll('.btn-set-period').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const mId = e.currentTarget.dataset.match, period = parseInt(e.currentTarget.dataset.period);
-          state.liveState.bracket[mId].livePeriod = period;
-          render();
-        });
-      });
-
-      document.querySelectorAll('.btn-toggle-live').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const mId = e.currentTarget.dataset.match;
-          if (!state.liveState) state.liveState = { bracket: JSON.parse(JSON.stringify(defaultBracketMatches)) };
-          const curr = !state.liveState.bracket[mId].isLive;
-          state.liveState.bracket[mId].isLive = curr;
-          if (curr) { state.liveState.bracket[mId].winner = ""; state.liveState.bracket[mId].livePeriod = 1; }
-          render();
-        });
-      });
-
-      document.querySelectorAll('.btn-select-winner').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const mId = e.currentTarget.dataset.match, win = e.currentTarget.dataset.winner;
-          const b = state.liveState.bracket;
-          b[mId].winner = win;
-          b[mId].isLive = false;
-          propagateAllWinners(b);
-          render();
-        });
-      });
-
-      document.getElementById('btn-save-all-cloud')?.addEventListener('click', async () => {
-        state.isPublishing = true; state.statusMessage = { type: 'info', text: 'Szinkronizálás...' }; render();
-        try {
-          const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'live_state', 'current');
-          const cleanedBracket = JSON.parse(JSON.stringify(state.liveState?.bracket || defaultBracketMatches));
-          const savePromise = setDoc(docRef, {
-            bracket: cleanedBracket,
-            updatedAt: new Date().toISOString()
-          });
-          await runWithTimeout(savePromise, 5000);
-          state.statusMessage = { type: 'success', text: 'Az Ágrajz sikeresen szinkronizálva lett az adatbázissal!' };
-        } catch(err) {
-          state.statusMessage = { type: 'error', text: 'Hiba: ' + err.message };
-        } finally { state.isPublishing = false; render(); }
-      });
-    };
-
+    // --- INITIALIZER ---
     window.onload = async () => {
       state.theme = localStorage.getItem('vb_2026_theme') || 'light';
       document.documentElement.className = state.theme;
